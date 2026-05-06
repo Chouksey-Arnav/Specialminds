@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SpecialMinds — Learning Tutor</title>
+<meta name="description" content="Free AI tutor for students with dyslexia, ADHD, dyscalculia, and dysgraphia.">
+<meta name="theme-color" content="#6248FF">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Lexend:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'OpenDyslexic';src:url('https://fonts.cdnfonts.com/s/16462/OpenDyslexic-Regular.woff') format('woff')}
+:root{
+  --bg:#FDF8F0;--surface:#fff;--surface-alt:#F7F3FF;--surface-2:#F0EBE0;
+  --purple:#6248FF;--purple-d:#4A34E0;--purple-l:#EDE9FF;--purple-mid:#C4B5FF;
+  --green:#0D9E74;--green-l:#E0F5EE;--green-d:#0A7D5C;
+  --amber:#D97706;--amber-l:#FEF3C7;
+  --red:#DC2626;--red-l:#FEE2E2;
+  --text:#1A1033;--muted:#6B5F7A;--border:#E8E1FF;--border-2:#D4CCFF;
+  --r:12px;--r-lg:20px;--r-sm:8px;
+  --shadow:0 2px 12px rgba(98,72,255,.07);--shadow-md:0 6px 28px rgba(98,72,255,.12);
+  --sidebar:64px;--chat:340px;--topbar:58px;
+}
+[data-font="opendyslexic"] .content-text{font-family:'OpenDyslexic',sans-serif!important;letter-spacing:.04em;word-spacing:.1em}
+[data-bg="yellow"]{--bg:#FFFBEB}[data-bg="blue"]{--bg:#EFF6FF}[data-bg="white"]{--bg:#fff}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Lexend',sans-serif;background:var(--bg);color:var(--text);font-size:17px;line-height:1.6}
+button{cursor:pointer;font-family:'Lexend',sans-serif;border:none;background:transparent}
+textarea,input{font-family:'Lexend',sans-serif;font-size:16px;outline:none;border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px;background:var(--surface);color:var(--text);width:100%;resize:none;transition:border-color .2s}
+textarea:focus,input:focus{border-color:var(--purple)}
+select{font-family:'Lexend',sans-serif;font-size:14px;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:7px 12px;background:var(--surface);color:var(--text);cursor:pointer}
+
+/* ONBOARDING */
+#onboarding{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+#onboarding.hidden{display:none}
+.onboard-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:40px;max-width:540px;width:100%;box-shadow:var(--shadow-md)}
+.ob-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--purple);margin-bottom:28px;display:flex;align-items:center;gap:8px}
+.ob-logo span{background:var(--purple);color:#fff;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.ob-step{display:none;animation:stepIn .3s ease}
+.ob-step.active{display:block}
+@keyframes stepIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.ob-progress{display:flex;gap:6px;margin-bottom:24px}
+.ob-dot{height:4px;flex:1;background:var(--border);border-radius:4px;transition:background .3s}
+.ob-dot.done{background:var(--purple)}
+.ob-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px}
+.ob-sub{color:var(--muted);font-size:15px;margin-bottom:24px}
+.ob-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.ob-option{border:2px solid var(--border);border-radius:var(--r);padding:14px;text-align:left;transition:all .2s;background:var(--surface);cursor:pointer}
+.ob-option:hover{border-color:var(--purple-mid);background:var(--surface-alt)}
+.ob-option.selected{border-color:var(--purple);background:var(--purple-l)}
+.ob-option .oo-icon{font-size:22px;margin-bottom:5px}
+.ob-option .oo-title{font-size:14px;font-weight:500;margin-bottom:2px}
+.ob-option .oo-desc{font-size:12px;color:var(--muted)}
+.ob-input{border:2px solid var(--border);border-radius:var(--r);padding:14px 18px;font-size:18px;color:var(--text);width:100%;margin-bottom:24px;transition:border-color .2s;background:var(--surface)}
+.ob-input:focus{border-color:var(--purple);outline:none}
+.ob-btn{width:100%;background:var(--purple);color:#fff;border:none;border-radius:100px;padding:14px;font-size:16px;font-weight:500;cursor:pointer;transition:all .2s}
+.ob-btn:hover{background:var(--purple-d)}
+.ob-skip{text-align:center;margin-top:10px;font-size:13px;color:var(--muted);cursor:pointer}
+.ob-skip:hover{color:var(--purple)}
+
+/* APP SHELL */
+#app{display:grid;grid-template-rows:var(--topbar) 1fr;grid-template-columns:var(--sidebar) 1fr var(--chat);height:100vh;transition:grid-template-columns .3s}
+#app.chat-closed{grid-template-columns:var(--sidebar) 1fr 0px}
+.topbar{grid-column:1/-1;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:14px;z-index:50;flex-shrink:0}
+.topbar-logo{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--purple);display:flex;align-items:center;gap:7px;flex-shrink:0}
+.tl-icon{background:var(--purple);color:#fff;width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.topbar-center{flex:1;display:flex;align-items:center;gap:10px}
+.session-chip{background:var(--surface-alt);border:1px solid var(--border);border-radius:100px;padding:4px 12px;display:flex;align-items:center;gap:6px;font-size:13px}
+.sc-dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.topbar-actions{display:flex;align-items:center;gap:7px}
+.topbar-btn{background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 14px;font-size:13px;font-weight:500;color:var(--text);transition:all .2s;display:flex;align-items:center;gap:5px}
+.topbar-btn:hover,.topbar-btn.active{background:var(--purple-l);border-color:var(--purple);color:var(--purple)}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:5px;overflow:hidden}
+.sidebar-btn{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-size:19px;transition:all .2s;position:relative}
+.sidebar-btn:hover{background:var(--surface-alt)}
+.sidebar-btn.active{background:var(--purple);box-shadow:0 4px 16px rgba(98,72,255,.25)}
+.sb-tooltip{position:absolute;left:58px;background:var(--text);color:#fff;font-size:12px;padding:5px 10px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s;z-index:200}
+.sidebar-btn:hover .sb-tooltip{opacity:1}
+.sidebar-divider{width:32px;height:1px;background:var(--border);margin:3px 0}
+
+/* ENGINE AREA */
+.engine-area{overflow-y:auto;background:var(--bg);display:flex;flex-direction:column;min-height:0}
+.engine-panel{display:none;flex:1;flex-direction:column;animation:panelIn .28s ease}
+.engine-panel.active{display:flex}
+@keyframes panelIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.engine-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;gap:14px;flex-shrink:0;flex-wrap:wrap;gap:10px}
+.engine-title{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;display:flex;align-items:center;gap:9px}
+.et-icon{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:17px}
+.engine-subtitle{font-size:12px;color:var(--muted);margin-top:2px}
+.engine-mode-tabs{display:flex;gap:5px;margin-left:auto;flex-wrap:wrap}
+.mode-tab{background:var(--surface-alt);border:1.5px solid var(--border);color:var(--muted);padding:5px 13px;border-radius:100px;font-size:13px;transition:all .2s}
+.mode-tab.active{background:var(--purple-l);border-color:var(--purple);color:var(--purple);font-weight:500}
+.engine-body{flex:1;overflow-y:auto;padding:20px}
+
+/* READING ENGINE */
+.reading-top{display:grid;grid-template-columns:1fr 220px;gap:14px;align-items:start}
+.passage-select-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.passage-btn{background:var(--surface-alt);border:1.5px solid var(--border);color:var(--text);padding:6px 13px;border-radius:100px;font-size:13px;transition:all .2s}
+.passage-btn:hover,.passage-btn.active{background:var(--purple-l);border-color:var(--purple);color:var(--purple)}
+.passage-display{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:22px 26px;min-height:180px;font-size:20px;line-height:2.3;font-family:inherit;position:relative;margin-bottom:12px}
+.word-span{display:inline;transition:all .15s;border-radius:4px;padding:0 2px}
+.word-span.highlighted{background:var(--purple);color:#fff;border-radius:5px;padding:2px 5px}
+.syl-1{color:var(--purple-d);font-weight:600}
+.syl-2{color:var(--green-d);font-weight:600}
+.reading-controls{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.rc-btn{background:var(--purple-l);border:1.5px solid var(--purple-mid);color:var(--purple);padding:8px 16px;border-radius:100px;font-size:13px;font-weight:500;transition:all .2s;display:flex;align-items:center;gap:5px}
+.rc-btn:hover,.rc-btn.playing{background:var(--purple);color:#fff;border-color:var(--purple)}
+.rc-btn.secondary{background:var(--surface-alt);border-color:var(--border);color:var(--text)}
+.rc-btn.secondary:hover{border-color:var(--purple-mid);color:var(--purple)}
+.speed-wrap{display:flex;align-items:center;gap:7px;margin-left:auto;font-size:12px;color:var(--muted)}
+.speed-slider{-webkit-appearance:none;height:4px;background:var(--border);border-radius:4px;outline:none;width:90px}
+.speed-slider::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--purple);cursor:pointer}
+.reading-stats{display:flex;flex-direction:column;gap:10px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;text-align:center}
+.stat-v{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--purple)}
+.stat-l{font-size:12px;color:var(--muted);margin-top:2px}
+.phoneme-strip{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.phoneme-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:9px 12px;text-align:center;min-width:58px;cursor:pointer;transition:all .2s}
+.phoneme-card:hover{border-color:var(--purple);background:var(--purple-l)}
+.pc-letter{font-size:22px;font-weight:700;color:var(--purple)}
+.pc-sound{font-size:11px;color:var(--muted)}
+.custom-area{display:none}
+.custom-area.visible{display:block;margin-bottom:12px}
+
+/* MATH ENGINE */
+.math-mode-panels{display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:start}
+.math-problem-input{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.math-problem-input label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:8px}
+.math-input-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.math-input-row input{font-size:20px;font-weight:600;text-align:center;max-width:90px;padding:9px}
+.math-op{font-size:26px;font-weight:700;color:var(--purple);flex-shrink:0}
+.math-go-btn{background:var(--purple);color:#fff;border:none;border-radius:var(--r-sm);padding:10px 20px;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s;flex-shrink:0}
+.math-go-btn:hover{background:var(--purple-d)}
+.canvas-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.canvas-card h3{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:10px}
+#nl-canvas,#am-canvas{width:100%;border-radius:7px}
+.step-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.step-item{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;transition:all .3s;cursor:pointer}
+.step-item.done{background:var(--green-l);border-color:rgba(13,158,116,.3)}
+.step-item.done .si-text{text-decoration:line-through;color:var(--muted)}
+.step-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;display:grid;place-items:center;transition:all .2s;margin-top:1px}
+.step-check.checked{background:var(--green);border-color:var(--green);color:#fff}
+.step-check.checked::after{content:'✓';font-size:12px;font-weight:700}
+.si-text{font-size:14px;flex:1}
+.si-time{font-size:11px;color:var(--purple);font-weight:500;margin-top:3px}
+.word-prob-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.wp-original{background:var(--surface-2);border-radius:var(--r-sm);padding:12px;font-size:14px;margin-bottom:12px;border-left:4px solid var(--border-2)}
+.wp-simplified{background:var(--green-l);border-radius:var(--r-sm);padding:12px;font-size:15px;line-height:1.8;border-left:4px solid var(--green);display:none}
+.math-hint{background:var(--purple-l);border:1px solid var(--purple-mid);border-radius:var(--r);padding:14px;font-size:13px}
+.math-hint h4{font-size:13px;font-weight:600;color:var(--purple);margin-bottom:6px}
+.math-subpanel{display:none}
+.math-subpanel.active{display:block}
+
+/* WRITING ENGINE */
+.writing-top{display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:start}
+.voice-btn{width:72px;height:72px;border-radius:50%;background:var(--purple);color:#fff;font-size:28px;display:grid;place-items:center;margin:0 auto 14px;transition:all .2s;box-shadow:0 4px 18px rgba(98,72,255,.25)}
+.voice-btn:hover{background:var(--purple-d);transform:scale(1.04)}
+.voice-btn.recording{background:var(--red);animation:pulseRec 1s ease infinite}
+@keyframes pulseRec{0%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}70%{box-shadow:0 0 0 14px rgba(220,38,38,0)}100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}}
+.transcript-area{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:16px;min-height:120px;font-size:17px;line-height:1.9}
+.transcript-area[contenteditable]:focus{border-color:var(--purple);outline:none}
+.writing-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.w-btn{background:var(--surface-alt);border:1.5px solid var(--border);color:var(--text);padding:7px 14px;border-radius:100px;font-size:13px;font-weight:500;transition:all .2s}
+.w-btn:hover{border-color:var(--purple-mid);color:var(--purple)}
+.w-btn.primary{background:var(--purple);border-color:var(--purple);color:#fff}
+.w-btn.primary:hover{background:var(--purple-d)}
+.predict-bar{background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--r-sm);padding:7px 10px;display:flex;gap:7px;flex-wrap:wrap;min-height:36px;margin-top:7px}
+.predict-chip{background:var(--surface);border:1px solid var(--border-2);color:var(--purple);padding:3px 11px;border-radius:100px;font-size:12px;cursor:pointer;transition:all .2s}
+.predict-chip:hover{background:var(--purple-l);border-color:var(--purple)}
+.frames-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.frame-option{background:var(--surface-alt);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 13px;font-size:14px;margin-bottom:7px;cursor:pointer;transition:all .2s;line-height:1.5}
+.frame-option:hover,.frame-option.selected{border-color:var(--purple);background:var(--purple-l)}
+.outline-view{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:10px;display:none}
+.outline-view.visible{display:block}
+.outline-item{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid var(--border)}
+.outline-item:last-child{border:none}
+.outline-num{color:var(--purple);font-weight:700;font-size:14px;min-width:22px}
+.writing-draft{font-size:17px;line-height:1.9;min-height:140px;padding:18px}
+.para-nav{display:flex;align-items:center;gap:10px;margin-top:10px}
+.para-nav-btn{background:var(--surface-alt);border:1.5px solid var(--border);color:var(--text);padding:7px 14px;border-radius:var(--r-sm);font-size:13px;transition:all .2s}
+.para-nav-btn:hover{border-color:var(--purple-mid)}
+.writing-subpanel{display:none}
+.writing-subpanel.active{display:block}
+
+/* EXECUTIVE ENGINE */
+.exec-top{display:grid;grid-template-columns:1fr 240px;gap:18px;align-items:start}
+.task-input-area{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.task-input-area label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:7px}
+.decompose-btn{width:100%;background:var(--purple);color:#fff;border:none;border-radius:var(--r-sm);padding:11px;font-size:15px;font-weight:500;cursor:pointer;margin-top:10px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.decompose-btn:hover{background:var(--purple-d)}
+.decompose-btn:disabled{opacity:.6;cursor:not-allowed}
+.task-checklist{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.task-item{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;transition:all .3s;cursor:pointer}
+.task-item:hover{border-color:var(--purple-mid)}
+.task-item.done{background:var(--green-l);border-color:rgba(13,158,116,.3)}
+.task-item.done .ti-text{text-decoration:line-through;color:var(--muted)}
+.task-item.current-task{border-color:var(--purple);background:var(--purple-l)}
+.ti-checkbox{width:20px;height:20px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;transition:all .2s;display:grid;place-items:center;margin-top:1px}
+.task-item.done .ti-checkbox{background:var(--green);border-color:var(--green);color:#fff}
+.task-item.done .ti-checkbox::after{content:'✓';font-size:12px;font-weight:700}
+.ti-text{font-size:14px;line-height:1.5}
+.ti-meta{font-size:11px;color:var(--purple);font-weight:500;margin-top:3px}
+.progress-bar-wrap{background:var(--border);border-radius:100px;height:5px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--purple);border-radius:100px;transition:width .5s ease}
+.progress-label{font-size:12px;color:var(--muted);margin-top:5px;text-align:center}
+.timer-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;text-align:center}
+.timer-ring-wrap{position:relative;width:160px;height:160px;margin:0 auto 18px}
+.timer-ring-wrap canvas{position:absolute;top:0;left:0}
+.timer-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.timer-time{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;line-height:1}
+.timer-label-sm{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+.timer-controls{display:flex;gap:9px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.timer-btn{background:var(--purple-l);border:1.5px solid var(--purple-mid);color:var(--purple);padding:8px 18px;border-radius:100px;font-size:13px;font-weight:500;transition:all .2s}
+.timer-btn:hover,.timer-btn.primary{background:var(--purple);color:#fff;border-color:var(--purple)}
+.timer-settings{display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:13px;color:var(--muted)}
+.priority-matrix{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:10px;margin-top:14px}
+.quadrant{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;min-height:140px}
+.q-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.q-urgent-important .q-label{color:var(--red)}
+.q-not-urgent-important .q-label{color:var(--purple)}
+.q-urgent-not-important .q-label{color:var(--amber)}
+.q-not-urgent-not-important .q-label{color:var(--muted)}
+.q-input{font-size:12px;border:1px dashed var(--border);border-radius:var(--r-sm);padding:5px 9px;margin-top:5px;background:var(--surface-alt)}
+.q-items{display:flex;flex-direction:column;gap:5px;flex:1}
+.q-item{background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 9px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+.q-item-del{color:var(--muted);cursor:pointer;font-size:10px;padding:2px 5px;border-radius:4px}
+.q-item-del:hover{background:var(--red-l);color:var(--red)}
+.memory-pad{background:var(--amber-l);border:2px solid rgba(217,119,6,.25);border-radius:var(--r);padding:16px}
+.memory-pad h3{font-size:14px;font-weight:600;color:var(--amber);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.memory-pad textarea{background:rgba(255,255,255,.6);border-color:rgba(217,119,6,.2);font-size:15px;min-height:120px}
+.exec-subpanel{display:none}
+.exec-subpanel.active{display:block}
+
+/* AI CHAT PANEL */
+.chat-panel{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#app.chat-closed .chat-panel{overflow:hidden;width:0;border:none}
+.chat-header{padding:13px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;flex-shrink:0}
+.chat-header h3{font-size:14px;font-weight:600;flex:1}
+.ch-badge{background:var(--green-l);color:var(--green);font-size:11px;font-weight:500;padding:3px 8px;border-radius:100px;border:1px solid rgba(13,158,116,.2)}
+.chat-close{width:26px;height:26px;border-radius:6px;display:grid;place-items:center;color:var(--muted);font-size:15px;transition:background .2s}
+.chat-close:hover{background:var(--surface-alt);color:var(--text)}
+.chat-messages{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:9px;min-height:0}
+.chat-msg{max-width:92%;animation:msgIn .22s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.chat-msg.user{align-self:flex-end}
+.chat-msg.ai{align-self:flex-start}
+.chat-msg.system{align-self:center;max-width:100%}
+.chat-bubble{border-radius:15px;padding:10px 14px;font-size:14px;line-height:1.6}
+.chat-msg.user .chat-bubble{background:var(--purple);color:#fff;border-bottom-right-radius:4px}
+.chat-msg.ai .chat-bubble{background:var(--surface-alt);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px}
+.chat-msg.system .chat-bubble{background:var(--amber-l);border:1px solid rgba(217,119,6,.2);color:var(--amber);font-size:13px;border-radius:var(--r-sm)}
+.chat-typing{display:flex;gap:4px;align-items:center}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--purple-mid);animation:td 1.2s ease infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.chat-input-area{border-top:1px solid var(--border);padding:10px;display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
+.chat-textarea{flex:1;min-height:38px;max-height:96px;border-radius:var(--r);font-size:13px;resize:none;padding:9px 12px;line-height:1.5}
+.chat-voice-btn{width:36px;height:36px;border-radius:9px;background:var(--surface-alt);border:1.5px solid var(--border);display:grid;place-items:center;font-size:15px;flex-shrink:0;transition:all .2s}
+.chat-voice-btn:hover{border-color:var(--purple-mid)}
+.chat-voice-btn.recording{background:var(--red-l);border-color:var(--red)}
+.chat-send-btn{height:36px;background:var(--purple);color:#fff;border:none;border-radius:9px;padding:0 14px;font-size:13px;font-weight:500;flex-shrink:0;transition:all .2s;white-space:nowrap}
+.chat-send-btn:hover{background:var(--purple-d)}
+.chat-suggestions{padding:0 10px 10px;display:flex;gap:5px;flex-wrap:wrap}
+.sugg-chip{background:var(--surface-alt);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:100px;font-size:11px;cursor:pointer;transition:all .2s}
+.sugg-chip:hover{border-color:var(--purple-mid);color:var(--purple);background:var(--purple-l)}
+
+/* TOAST */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(18px);background:var(--text);color:#fff;padding:10px 22px;border-radius:100px;font-size:13px;font-weight:500;z-index:900;opacity:0;transition:all .28s;pointer-events:none;white-space:nowrap}
+#toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:800;display:none}
+.loading-pulse{animation:lp 1.4s ease infinite}
+@keyframes lp{0%,100%{opacity:.4}50%{opacity:1}}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:10px}
+
+/* MOBILE */
+@media(max-width:860px){
+  :root{--sidebar:0px;--chat:0px;--topbar:52px}
+  #app{grid-template-columns:1fr!important;grid-template-rows:var(--topbar) 1fr 58px}
+  .sidebar{display:none}
+  .chat-panel{display:none}
+  .mobile-tabs{display:flex!important}
+  .engine-body{padding:14px}
+  .reading-top,.math-mode-panels,.writing-top,.exec-top{grid-template-columns:1fr}
+  .priority-matrix{grid-template-columns:1fr}
+}
+.mobile-tabs{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:50;height:58px}
+.mobile-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;color:var(--muted);padding:3px;border:none;background:transparent;cursor:pointer;transition:color .2s}
+.mobile-tab.active{color:var(--purple)}
+.mobile-tab .mt-icon{font-size:19px}
+</style>
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="onboard-card">
+    <div class="ob-logo"><span>S</span>SpecialMinds</div>
+    <div class="ob-progress"><div class="ob-dot done" id="od1"></div><div class="ob-dot" id="od2"></div><div class="ob-dot" id="od3"></div><div class="ob-dot" id="od4"></div></div>
+    <div class="ob-step active" id="ob-step-1">
+      <div class="ob-title">Hi! What's your name?</div>
+      <div class="ob-sub">Just for your tutor to greet you. No account or email — ever.</div>
+      <input class="ob-input" id="ob-name" type="text" placeholder="Your name (optional)" autocomplete="off">
+      <button class="ob-btn" onclick="obNext(1)">Let's go →</button>
+      <div class="ob-skip" onclick="obSkip()">Skip setup, go straight to learning</div>
+    </div>
+    <div class="ob-step" id="ob-step-2">
+      <div class="ob-title">What would you like help with?</div>
+      <div class="ob-sub">Pick everything that fits. You can switch anytime.</div>
+      <div class="ob-options">
+        <button class="ob-option" data-val="dyslexia" onclick="obSelect(this)"><div class="oo-icon">📖</div><div class="oo-title">Reading</div><div class="oo-desc">Dyslexia, phonics, fluency</div></button>
+        <button class="ob-option" data-val="adhd" onclick="obSelect(this)"><div class="oo-icon">🧠</div><div class="oo-title">Staying focused</div><div class="oo-desc">ADHD, executive function</div></button>
+        <button class="ob-option" data-val="dyscalculia" onclick="obSelect(this)"><div class="oo-icon">🔢</div><div class="oo-title">Math</div><div class="oo-desc">Dyscalculia, number sense</div></button>
+        <button class="ob-option" data-val="dysgraphia" onclick="obSelect(this)"><div class="oo-icon">✏️</div><div class="oo-title">Writing</div><div class="oo-desc">Dysgraphia, organizing ideas</div></button>
+      </div>
+      <button class="ob-btn" onclick="obNext(2)">Continue →</button>
+    </div>
+    <div class="ob-step" id="ob-step-3">
+      <div class="ob-title">What grade are you in?</div>
+      <div class="ob-sub">Your tutor adjusts difficulty to match your grade.</div>
+      <div class="ob-options" style="grid-template-columns:repeat(4,1fr)">
+        <button class="ob-option" data-val="K" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">K</div><div class="oo-title">Kinder</div></button>
+        <button class="ob-option" data-val="1" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">1</div><div class="oo-title">1st</div></button>
+        <button class="ob-option" data-val="2" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">2</div><div class="oo-title">2nd</div></button>
+        <button class="ob-option" data-val="3" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">3</div><div class="oo-title">3rd</div></button>
+        <button class="ob-option" data-val="4" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">4</div><div class="oo-title">4th</div></button>
+        <button class="ob-option" data-val="5" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">5</div><div class="oo-title">5th</div></button>
+        <button class="ob-option" data-val="6" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">6</div><div class="oo-title">6th</div></button>
+        <button class="ob-option" data-val="7" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">7</div><div class="oo-title">7th</div></button>
+        <button class="ob-option" data-val="8" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">8</div><div class="oo-title">8th</div></button>
+        <button class="ob-option" data-val="9" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">9</div><div class="oo-title">9th</div></button>
+        <button class="ob-option" data-val="10" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">10</div><div class="oo-title">10th</div></button>
+        <button class="ob-option" data-val="11+" onclick="obSelect(this)"><div class="oo-icon" style="font-size:16px;font-weight:700">11+</div><div class="oo-title">11–12</div></button>
+      </div>
+      <button class="ob-btn" onclick="obNext(3)">Continue →</button>
+    </div>
+    <div class="ob-step" id="ob-step-4">
+      <div class="ob-title">Pick what's easiest to read</div>
+      <div class="ob-sub">You can change this anytime.</div>
+      <div class="ob-options" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:14px">
+        <button class="ob-option selected" data-group="font" data-val="lexend" onclick="obSelectGroup(this,'font')"><div style="font-family:'Lexend',sans-serif;font-size:16px;margin-bottom:5px">The big dog</div><div class="oo-title">Lexend</div><div class="oo-desc">Designed for reading ease</div></button>
+        <button class="ob-option" data-group="font" data-val="opendyslexic" onclick="obSelectGroup(this,'font')"><div style="font-family:'OpenDyslexic',sans-serif;font-size:14px;margin-bottom:5px">The big dog</div><div class="oo-title">OpenDyslexic</div><div class="oo-desc">Special letter shapes</div></button>
+        <button class="ob-option" data-group="font" data-val="standard" onclick="obSelectGroup(this,'font')"><div style="font-family:Georgia,serif;font-size:16px;margin-bottom:5px">The big dog</div><div class="oo-title">Standard</div><div class="oo-desc">Regular text</div></button>
+      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--muted);margin-bottom:9px">Background color:</div>
+      <div class="ob-options" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+        <button class="ob-option selected" data-group="bg" data-val="cream" onclick="obSelectGroup(this,'bg')" style="padding:9px;text-align:center"><div style="width:36px;height:36px;border-radius:7px;background:#FDF8F0;margin:0 auto 5px;border:2px solid #e0d8cc"></div><div class="oo-title" style="font-size:11px">Cream</div></button>
+        <button class="ob-option" data-group="bg" data-val="yellow" onclick="obSelectGroup(this,'bg')" style="padding:9px;text-align:center"><div style="width:36px;height:36px;border-radius:7px;background:#FFFBEB;margin:0 auto 5px;border:2px solid #e8d870"></div><div class="oo-title" style="font-size:11px">Yellow</div></button>
+        <button class="ob-option" data-group="bg" data-val="blue" onclick="obSelectGroup(this,'bg')" style="padding:9px;text-align:center"><div style="width:36px;height:36px;border-radius:7px;background:#EFF6FF;margin:0 auto 5px;border:2px solid #93c5fd"></div><div class="oo-title" style="font-size:11px">Blue</div></button>
+        <button class="ob-option" data-group="bg" data-val="white" onclick="obSelectGroup(this,'bg')" style="padding:9px;text-align:center"><div style="width:36px;height:36px;border-radius:7px;background:#fff;margin:0 auto 5px;border:2px solid #e5e7eb"></div><div class="oo-title" style="font-size:11px">White</div></button>
+      </div>
+      <button class="ob-btn" onclick="obFinish()">Start learning! 🎉</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="chat-closed" style="display:none">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-logo"><div class="tl-icon">S</div>SpecialMinds</div>
+    <div class="topbar-center">
+      <div class="session-chip"><div class="sc-dot"></div><span id="session-timer">00:00</span></div>
+      <div class="session-chip" id="score-chip" style="display:none">⭐ <span id="session-score">0</span></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn" onclick="cycleFont()" title="Change font">Aa</button>
+      <button class="topbar-btn" id="chat-toggle-btn" onclick="toggleChat()">💬 Tutor</button>
+      <button class="topbar-btn">👤 <span id="topbar-name">Me</span></button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <button class="sidebar-btn active" data-engine="reading" onclick="switchEngine('reading')">📖<span class="sb-tooltip">Reading Coach</span></button>
+    <button class="sidebar-btn" data-engine="math" onclick="switchEngine('math')">🔢<span class="sb-tooltip">Math Coach</span></button>
+    <button class="sidebar-btn" data-engine="writing" onclick="switchEngine('writing')">✏️<span class="sb-tooltip">Writing Coach</span></button>
+    <button class="sidebar-btn" data-engine="executive" onclick="switchEngine('executive')">🧠<span class="sb-tooltip">Focus Coach</span></button>
+    <div class="sidebar-divider"></div>
+    <button class="sidebar-btn" onclick="window.location.href='index.html'">🏠<span class="sb-tooltip">Home</span></button>
+  </nav>
+
+  <!-- ENGINE AREA -->
+  <main class="engine-area">
+
+    <!-- READING ENGINE -->
+    <section class="engine-panel active" id="engine-reading">
+      <div class="engine-header">
+        <div><div class="engine-title"><div class="et-icon" style="background:var(--purple-l)">📖</div>Reading Coach</div><div class="engine-subtitle">Orton-Gillingham structured literacy — built for dyslexic brains</div></div>
+        <div class="engine-mode-tabs">
+          <button class="mode-tab active" data-rmode="passage" onclick="setReadingMode('passage')">Passage</button>
+          <button class="mode-tab" data-rmode="phoneme" onclick="setReadingMode('phoneme')">Phonics Cards</button>
+          <button class="mode-tab" data-rmode="custom" onclick="setReadingMode('custom')">Custom Text</button>
+        </div>
+      </div>
+      <div class="engine-body">
+        <div class="reading-top">
+          <div>
+            <div class="passage-select-bar" id="passage-bar">
+              <span style="font-size:12px;font-weight:500;color:var(--muted)">Level:</span>
+              <button class="passage-btn" data-level="1" onclick="loadPassage(1)">1 — CVC words</button>
+              <button class="passage-btn active" data-level="2" onclick="loadPassage(2)">2 — Blends</button>
+              <button class="passage-btn" data-level="3" onclick="loadPassage(3)">3 — Long vowels</button>
+              <button class="passage-btn" data-level="4" onclick="loadPassage(4)">4 — Multi-syllable</button>
+              <button class="passage-btn" data-level="5" onclick="loadPassage(5)">5 — Grade level</button>
+              <button class="passage-btn" onclick="requestAIPassage()" style="margin-left:auto;background:var(--purple-l);border-color:var(--purple-mid);color:var(--purple)">✨ AI Generate</button>
+            </div>
+            <div class="custom-area" id="custom-area">
+              <textarea id="custom-text-input" rows="4" placeholder="Paste any text here — homework, a book, anything you need to practice..."></textarea>
+              <button class="rc-btn" style="margin-top:8px" onclick="loadCustomPassage()">Load text →</button>
+            </div>
+            <div class="passage-display content-text" id="passage-display"><span style="color:var(--muted);font-size:15px">Select a level above to load a passage.</span></div>
+            <div class="reading-controls" id="reading-controls" style="display:none">
+              <button class="rc-btn" id="tts-play-btn" onclick="toggleTTS()">▶ Play</button>
+              <button class="rc-btn secondary" onclick="stopTTS()">⏹ Stop</button>
+              <button class="rc-btn secondary" id="syl-btn" onclick="toggleSyllables()">🔤 Syllables</button>
+              <button class="rc-btn secondary" onclick="clearHighlight()">Clear</button>
+              <div class="speed-wrap"><span>🐢</span><input type="range" class="speed-slider" id="speed-slider" min="40" max="120" value="85" oninput="updateSpeed(this.value)"><span>🐇</span><span id="speed-label" style="min-width:32px">85%</span></div>
+            </div>
+            <div id="phoneme-mode" style="display:none"><div style="font-size:14px;font-weight:500;margin-bottom:12px">Letter sounds — click a card to hear it</div><div class="phoneme-strip" id="phoneme-strip"></div></div>
+          </div>
+          <div class="reading-stats">
+            <div class="stat-card"><div class="stat-v" id="words-read-count">0</div><div class="stat-l">Words read today</div></div>
+            <div class="stat-card"><div class="stat-v" id="session-wpm">—</div><div class="stat-l">Words per minute</div></div>
+            <div class="stat-card" style="background:var(--green-l);border-color:rgba(13,158,116,.25)"><div class="stat-v" style="color:var(--green)" id="reading-streak">0🔥</div><div class="stat-l">Day streak</div></div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px">
+              <div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:7px">Session progress</div>
+              <div style="background:var(--border);border-radius:100px;height:5px;overflow:hidden"><div id="session-progress-fill" style="height:100%;background:var(--purple);border-radius:100px;width:0%;transition:width .5s"></div></div>
+              <div style="font-size:11px;color:var(--muted);margin-top:5px" id="session-progress-label">0 / 15 min</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MATH ENGINE -->
+    <section class="engine-panel" id="engine-math">
+      <div class="engine-header">
+        <div><div class="engine-title"><div class="et-icon" style="background:#E0F5EE">🔢</div>Math Coach</div><div class="engine-subtitle">Visual first — see it before you solve it</div></div>
+        <div class="engine-mode-tabs">
+          <button class="mode-tab active" data-mmode="numberline" onclick="setMathMode('numberline')">Number Line</button>
+          <button class="mode-tab" data-mmode="areamodel" onclick="setMathMode('areamodel')">Area Model</button>
+          <button class="mode-tab" data-mmode="wordproblem" onclick="setMathMode('wordproblem')">Word Problems</button>
+          <button class="mode-tab" data-mmode="steps" onclick="setMathMode('steps')">Step-by-Step</button>
+        </div>
+      </div>
+      <div class="engine-body">
+        <div class="math-mode-panels">
+          <div>
+            <div id="math-numberline" class="math-subpanel active">
+              <div class="math-problem-input"><label>Enter a problem:</label><div class="math-input-row"><input type="number" id="nl-a" value="8" min="0" max="100" oninput="updateNL()"><select id="nl-op" onchange="updateNL()"><option>+</option><option>-</option></select><input type="number" id="nl-b" value="5" min="0" max="100" oninput="updateNL()"><span class="math-op">=</span><input type="number" id="nl-answer" placeholder="?"><button class="math-go-btn" onclick="checkNLAnswer()">Check ✓</button></div></div>
+              <div class="canvas-card"><h3>🔢 Number Line — see the jumps</h3><canvas id="nl-canvas" height="100"></canvas></div>
+              <div id="nl-feedback" style="display:none"></div>
+              <div class="math-hint"><h4>💡 How to use</h4><p>Start at the first number. Jump forward (+) or backward (−) by the second number. Where you land is your answer!</p></div>
+            </div>
+            <div id="math-areamodel" class="math-subpanel">
+              <div class="math-problem-input"><label>Multiplication:</label><div class="math-input-row"><input type="number" id="am-a" value="6" min="1" max="30" oninput="updateAM()"><span class="math-op">×</span><input type="number" id="am-b" value="7" min="1" max="30" oninput="updateAM()"><span class="math-op">=</span><input type="number" id="am-answer" placeholder="?"><button class="math-go-btn" onclick="checkAMAnswer()">Check ✓</button></div></div>
+              <div class="canvas-card"><h3>🟩 Area Model — count the squares</h3><canvas id="am-canvas" height="220"></canvas></div>
+              <div id="am-result" style="display:none;text-align:center;font-size:19px;font-weight:700;color:var(--purple);padding:10px 0"></div>
+            </div>
+            <div id="math-wordproblem" class="math-subpanel">
+              <div class="word-prob-card"><label style="font-size:13px;font-weight:500;color:var(--muted);display:block;margin-bottom:7px">Paste a word problem:</label><textarea id="wp-input" rows="4" placeholder="There are 24 students in a class. Each student needs 3 pencils. How many pencils total?"></textarea><button class="math-go-btn" style="margin-top:9px;border-radius:var(--r-sm)" onclick="simplifyWordProblem()">✨ Simplify for me</button><div style="margin-top:13px"><div style="font-size:13px;font-weight:500;color:var(--muted);margin-bottom:7px">Original:</div><div class="wp-original" id="wp-original">Your problem will appear here.</div><div style="font-size:13px;font-weight:500;color:var(--green);margin-bottom:7px;margin-top:12px">✓ Simplified:</div><div class="wp-simplified" id="wp-simplified"></div></div></div>
+            </div>
+            <div id="math-steps" class="math-subpanel">
+              <div class="math-problem-input"><label>What math problem do you need help with?</label><textarea id="steps-input" rows="3" placeholder="e.g. 234 × 56, or solve 3x + 7 = 22, or 144 ÷ 12"></textarea><button class="math-go-btn" style="margin-top:9px;width:100%;border-radius:var(--r-sm)" onclick="generateSteps()">Break it into steps →</button></div>
+              <ul id="steps-list" class="step-list"></ul>
+              <div id="steps-progress" style="display:none;margin-top:13px"><div class="progress-bar-wrap"><div class="progress-bar-fill" id="steps-progress-bar"></div></div><div class="progress-label" id="steps-progress-label"></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="math-hint" style="margin-bottom:14px"><h4>🎯 Stuck?</h4><p style="font-size:13px;line-height:1.7">Open the 💬 Tutor chat and ask about your problem. Your AI tutor will walk through it with you step by step.</p></div>
+            <div class="stat-card"><div class="stat-v" id="math-solved-count" style="color:var(--green)">0</div><div class="stat-l">Problems solved today</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WRITING ENGINE -->
+    <section class="engine-panel" id="engine-writing">
+      <div class="engine-header">
+        <div><div class="engine-title"><div class="et-icon" style="background:#FEF3C7">✏️</div>Writing Coach</div><div class="engine-subtitle">Speak your ideas first — worry about spelling second</div></div>
+        <div class="engine-mode-tabs">
+          <button class="mode-tab active" data-wmode="voice" onclick="setWritingMode('voice')">🎤 Voice</button>
+          <button class="mode-tab" data-wmode="braindump" onclick="setWritingMode('braindump')">🌀 Brain Dump</button>
+          <button class="mode-tab" data-wmode="frames" onclick="setWritingMode('frames')">🧱 Sentence Frames</button>
+          <button class="mode-tab" data-wmode="edit" onclick="setWritingMode('edit')">📝 Edit Mode</button>
+        </div>
+      </div>
+      <div class="engine-body">
+        <div class="writing-top">
+          <div>
+            <div id="writing-voice" class="writing-subpanel active"><div style="text-align:center;padding:16px 0 8px"><button class="voice-btn" id="writing-voice-btn" onclick="toggleWritingVoice()">🎤</button><div style="font-size:14px;font-weight:500;margin-bottom:4px" id="voice-status">Tap to start speaking</div><div style="font-size:12px;color:var(--muted)">Speak naturally — we'll clean it up</div></div><div id="writing-transcript" class="transcript-area content-text" contenteditable="true" spellcheck="false" data-placeholder="Your words will appear here..."></div><div class="predict-bar" id="predict-bar"><span style="font-size:11px;color:var(--muted)">Word suggestions:</span></div><div class="writing-actions"><button class="w-btn primary" onclick="cleanTranscript()">✨ Clean up</button><button class="w-btn" onclick="copyTranscript()">📋 Copy</button><button class="w-btn" onclick="clearTranscript()">🗑 Clear</button></div></div>
+            <div id="writing-braindump" class="writing-subpanel"><div style="font-size:14px;color:var(--muted);margin-bottom:10px">Dump everything — don't worry about order or spelling. Just write.</div><textarea id="braindump-input" rows="8" class="writing-draft" placeholder="Just type everything. Messy is OK. Random is OK. Your tutor will organize it..."></textarea><div class="writing-actions" style="margin-top:9px"><button class="w-btn primary" onclick="organizeBrainDump()">✨ Organize my ideas</button><button class="w-btn" onclick="document.getElementById('braindump-input').value=''">🗑 Clear</button></div><div class="outline-view" id="braindump-outline"></div></div>
+            <div id="writing-frames" class="writing-subpanel"><div style="font-size:14px;font-weight:500;margin-bottom:7px">What are you writing about?</div><div style="display:flex;gap:9px;margin-bottom:14px"><input type="text" id="frames-topic" placeholder='"Why dogs make great pets"' style="flex:1"><button class="w-btn primary" onclick="getFrames()" style="white-space:nowrap">Get starters →</button></div><div id="frames-list" class="frames-panel"><div style="font-size:13px;color:var(--muted);text-align:center;padding:18px">Enter a topic to get sentence starters</div></div><div id="frames-compose" style="display:none;margin-top:12px"><div style="font-size:13px;font-weight:500;color:var(--muted);margin-bottom:7px">Continue from your starter:</div><textarea id="frames-continuation" rows="5" class="writing-draft" placeholder="Keep writing..."></textarea></div></div>
+            <div id="writing-edit" class="writing-subpanel"><div style="font-size:14px;color:var(--muted);margin-bottom:10px">Paste your draft. Your tutor shows one paragraph at a time — never a wall of text.</div><textarea id="edit-full-input" rows="6" placeholder="Paste your draft here..."></textarea><button class="w-btn primary" style="margin-top:9px" onclick="loadEditMode()">Load one paragraph at a time →</button><div id="para-view" style="display:none;margin-top:14px"><div style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:7px">Paragraph <span id="para-num">1</span>:</div><div id="para-display" class="writing-draft transcript-area content-text" contenteditable="true"></div><div class="para-nav"><button class="para-nav-btn" onclick="prevPara()">← Previous</button><span style="font-size:13px;color:var(--muted)" id="para-indicator"></span><button class="para-nav-btn" onclick="nextPara()">Next →</button><button class="w-btn primary" style="margin-left:auto" onclick="getFeedbackOnPara()">Ask tutor</button></div></div></div>
+          </div>
+          <div>
+            <div class="frames-panel" style="margin-bottom:14px">
+              <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:9px">Quick prompts</div>
+              <div id="writing-prompts">
+                <div class="frame-option" onclick="usePrompt(this)">"Write about your favorite animal and why."</div>
+                <div class="frame-option" onclick="usePrompt(this)">"Describe what you did last weekend."</div>
+                <div class="frame-option" onclick="usePrompt(this)">"If you could have any superpower, what and why?"</div>
+              </div>
+            </div>
+            <div class="stat-card"><div class="stat-v" id="words-written-count" style="color:var(--amber)">0</div><div class="stat-l">Words written today</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXECUTIVE ENGINE -->
+    <section class="engine-panel" id="engine-executive">
+      <div class="engine-header">
+        <div><div class="engine-title"><div class="et-icon" style="background:var(--purple-l)">🧠</div>Focus Coach</div><div class="engine-subtitle">One thing at a time. You've got this.</div></div>
+        <div class="engine-mode-tabs">
+          <button class="mode-tab active" data-emode="tasks" onclick="setExecMode('tasks')">📋 Tasks</button>
+          <button class="mode-tab" data-emode="timer" onclick="setExecMode('timer')">⏱ Timer</button>
+          <button class="mode-tab" data-emode="matrix" onclick="setExecMode('matrix')">📊 Priority</button>
+          <button class="mode-tab" data-emode="mempad" onclick="setExecMode('mempad')">🗒 Memory Pad</button>
+        </div>
+      </div>
+      <div class="engine-body">
+        <div class="exec-top">
+          <div>
+            <div id="exec-tasks" class="exec-subpanel active">
+              <div class="task-input-area"><label>Paste your assignment here:</label><textarea id="task-assignment-input" rows="4" placeholder="e.g. Chapter 5 questions 1-10, math worksheet pages 23-24, spelling 20 words..."></textarea><button class="decompose-btn" id="decompose-btn" onclick="decomposeTask()"><span>✨ Break it into steps</span></button></div>
+              <div id="task-checklist" class="task-checklist"></div>
+              <div id="task-progress-wrap" style="display:none;margin-top:13px"><div class="progress-bar-wrap"><div class="progress-bar-fill" id="task-progress-fill"></div></div><div class="progress-label" id="task-progress-label"></div></div>
+            </div>
+            <div id="exec-timer" class="exec-subpanel">
+              <div class="timer-card">
+                <div style="font-size:13px;font-weight:500;color:var(--muted);margin-bottom:18px" id="timer-mode-label">Focus Session</div>
+                <div class="timer-ring-wrap"><canvas id="timer-canvas" width="160" height="160"></canvas><div class="timer-display"><div class="timer-time" id="timer-display-time">15:00</div><div class="timer-label-sm" id="timer-display-mode">FOCUS</div></div></div>
+                <div class="timer-controls">
+                  <button class="timer-btn primary" id="timer-start-btn" onclick="startTimer()">▶ Start</button>
+                  <button class="timer-btn" id="timer-pause-btn" onclick="pauseTimer()" style="display:none">⏸ Pause</button>
+                  <button class="timer-btn" onclick="resetTimer()">↩ Reset</button>
+                </div>
+                <div class="timer-settings"><label>Focus: <select id="timer-work-sel" onchange="updateTimerSettings()"><option value="10">10 min</option><option value="15" selected>15 min</option><option value="20">20 min</option><option value="25">25 min</option></select></label><label>Break: <select id="timer-break-sel" onchange="updateTimerSettings()"><option value="3">3 min</option><option value="5" selected>5 min</option><option value="10">10 min</option></select></label></div>
+                <div style="margin-top:18px;font-size:13px;color:var(--muted);line-height:1.7;padding:11px;background:var(--surface-alt);border-radius:var(--r-sm)">💡 Work <span id="timer-work-display">15</span> min then take a <span id="timer-break-display">5</span>-min break. Your brain needs those breaks!</div>
+              </div>
+            </div>
+            <div id="exec-matrix" class="exec-subpanel">
+              <div style="font-size:14px;color:var(--muted);margin-bottom:12px">Type a task in any box and press Enter to add it.</div>
+              <div class="priority-matrix">
+                <div class="quadrant q-urgent-important"><div class="q-label">🔴 Do first — urgent &amp; important</div><div class="q-items" id="q-q1"></div><input class="q-input" placeholder="Add task + Enter" onkeydown="addToQuadrant(event,'q1')"></div>
+                <div class="quadrant q-not-urgent-important"><div class="q-label">🟣 Schedule — not urgent, important</div><div class="q-items" id="q-q2"></div><input class="q-input" placeholder="Add task + Enter" onkeydown="addToQuadrant(event,'q2')"></div>
+                <div class="quadrant q-urgent-not-important"><div class="q-label">🟡 Delegate — urgent, not important</div><div class="q-items" id="q-q3"></div><input class="q-input" placeholder="Add task + Enter" onkeydown="addToQuadrant(event,'q3')"></div>
+                <div class="quadrant q-not-urgent-not-important"><div class="q-label">⬜ Skip for now</div><div class="q-items" id="q-q4"></div><input class="q-input" placeholder="Add task + Enter" onkeydown="addToQuadrant(event,'q4')"></div>
+              </div>
+            </div>
+            <div id="exec-mempad" class="exec-subpanel">
+              <div class="memory-pad"><h3>🗒 Working Memory Pad</h3><p style="font-size:12px;color:var(--amber);margin-bottom:10px">Dump any thought here so it doesn't distract you.</p><textarea id="memory-pad-input" rows="8" placeholder="Random thought: don't forget gym shoes&#10;Tell mom about the field trip..."></textarea><div style="display:flex;gap:7px;margin-top:9px"><button class="w-btn" onclick="clearMemPad()">🗑 Clear</button><button class="w-btn" onclick="copyMemPad()">📋 Copy</button><span style="margin-left:auto;font-size:11px;color:var(--amber)" id="mempad-saved">Auto-saved ✓</span></div></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="stat-card"><div class="stat-v" id="tasks-done-count" style="color:var(--purple)">0</div><div class="stat-l">Tasks done today</div></div>
+            <div class="stat-card" style="background:var(--green-l);border:1px solid rgba(13,158,116,.2)"><div class="stat-v" id="focus-minutes-count" style="color:var(--green)">0</div><div class="stat-l">Focus minutes today</div></div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px"><div style="font-size:12px;font-weight:600;margin-bottom:8px">💡 ADHD tip</div><div style="font-size:12px;color:var(--muted);line-height:1.7" id="adhd-tip">Start with the easiest task. The feeling of finishing builds momentum.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- CHAT PANEL -->
+  <aside class="chat-panel" id="chat-panel">
+    <div class="chat-header"><span style="font-size:18px">🤖</span><h3>AI Tutor</h3><span class="ch-badge">Online</span><button class="chat-close" onclick="toggleChat()">✕</button></div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-suggestions" id="chat-suggestions">
+      <div class="sugg-chip" onclick="useSuggestion(this)">Can you explain this?</div>
+      <div class="sugg-chip" onclick="useSuggestion(this)">Give me a hint</div>
+      <div class="sugg-chip" onclick="useSuggestion(this)">I'm feeling stuck</div>
+      <div class="sugg-chip" onclick="useSuggestion(this)">I need a break</div>
+    </div>
+    <div class="chat-input-area">
+      <button class="chat-voice-btn" id="chat-voice-btn" onclick="toggleChatVoice()">🎤</button>
+      <textarea class="chat-textarea" id="chat-input" rows="1" placeholder="Ask anything..." onkeydown="chatKeydown(event)" oninput="autoResizeChat(this)"></textarea>
+      <button class="chat-send-btn" onclick="sendChat()">Send</button>
+    </div>
+  </aside>
+
+  <!-- MOBILE TABS -->
+  <nav class="mobile-tabs">
+    <button class="mobile-tab active" onclick="switchEngine('reading')"><span class="mt-icon">📖</span>Reading</button>
+    <button class="mobile-tab" onclick="switchEngine('math')"><span class="mt-icon">🔢</span>Math</button>
+    <button class="mobile-tab" onclick="switchEngine('writing')"><span class="mt-icon">✏️</span>Writing</button>
+    <button class="mobile-tab" onclick="switchEngine('executive')"><span class="mt-icon">🧠</span>Focus</button>
+    <button class="mobile-tab" onclick="toggleChat()"><span class="mt-icon">💬</span>Tutor</button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+<canvas id="confetti-canvas"></canvas>
+<script>
+// Register service worker for offline support
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+</script>
+
+<script>
+'use strict';
+// ══ STATE ════════════════════════════════════════════════
+const S={
+  profile:{name:'',learningType:'dyslexia',grade:'7',font:'lexend',bg:'cream',setupDone:false},
+  engine:'reading',chat:{messages:[],loading:false},
+  reading:{passageText:'',words:[],speaking:false,speed:.85,syllablesOn:false,wordsRead:0,wpmStart:null,wpmWords:0},
+  math:{mode:'numberline',solved:0},
+  writing:{mode:'voice',voiceActive:false,recognition:null,wordsWritten:0,paras:[],paraIdx:0},
+  exec:{mode:'tasks',tasks:[],timerMode:'work',focusMinutes:0,tasksDone:0},
+  session:{startTime:Date.now(),score:0},
+  errorCount:0,
+  quadrants:{q1:[],q2:[],q3:[],q4:[]},
+  _steps:null
+};
+
+const PASSAGES={
+  1:`The cat sat on the mat. The big dog ran. Pat the fat cat. The red hen sat. The rat bit the mat. Sit, cat, sit!`,
+  2:`The black cat ran past the shed. Glen had a pet frog. The frog sat on a log and blinked at the fly. The shrimp swam fast in the cold stream. Clap your hands for the big jump!`,
+  3:`The lake was still and bright. Jake rode his bike down the long lane. He came to a gate made of white stone. A crane flew low over the wide blue lake. Jake smiled as the late sun made the waves shine.`,
+  4:`The expedition team hiked three hours before finding shelter. Despite unexpected rainfall, everyone stayed hopeful. Thunderclouds gathered overhead, but the temperature remained comfortable. Their campsite had everything needed for wilderness survival.`,
+  5:`Bioluminescence is a remarkable phenomenon found in marine organisms. Deep-sea creatures, including jellyfish and anglerfish, produce light through chemical reactions. Scientists continue to investigate how this adaptation evolved and what evolutionary advantages it provides in the lightless ocean depths.`
+};
+
+const PHONEMES=[
+  {letter:'a',sound:'/æ/ as in cat'},{letter:'b',sound:'/b/ as in bat'},{letter:'c',sound:'/k/ as in cap'},
+  {letter:'ch',sound:'/tʃ/ as in chin'},{letter:'d',sound:'/d/ as in dog'},{letter:'e',sound:'/ɛ/ as in bed'},
+  {letter:'f',sound:'/f/ as in fan'},{letter:'g',sound:'/g/ as in get'},{letter:'h',sound:'/h/ as in hat'},
+  {letter:'i',sound:'/ɪ/ as in sit'},{letter:'j',sound:'/dʒ/ as in jet'},{letter:'k',sound:'/k/ as in kit'},
+  {letter:'l',sound:'/l/ as in lip'},{letter:'m',sound:'/m/ as in map'},{letter:'n',sound:'/n/ as in net'},
+  {letter:'o',sound:'/ɒ/ as in hot'},{letter:'p',sound:'/p/ as in pet'},{letter:'r',sound:'/r/ as in run'},
+  {letter:'s',sound:'/s/ as in sun'},{letter:'sh',sound:'/ʃ/ as in ship'},{letter:'t',sound:'/t/ as in tap'},
+  {letter:'th',sound:'/θ/ as in thin'},{letter:'u',sound:'/ʌ/ as in cup'},{letter:'v',sound:'/v/ as in van'},
+  {letter:'w',sound:'/w/ as in wet'}
+];
+
+const ADHD_TIPS=[
+  "Start with the easiest task first. Finishing something small builds momentum for the harder ones.",
+  "Set a timer for just 2 minutes and tell yourself you only have to work for 2 minutes. You'll usually keep going.",
+  "If you can't start, just open the document. That's your only job right now.",
+  "Big tasks feel impossible because they're fuzzy. Break it into specific tiny steps until each step is crystal clear.",
+  "Take breaks on a schedule — not when you feel like it. Your brain works better with planned breaks.",
+  "Body doubling works: study near other people, even if they're doing something different."
+];
+
+// ══ ONBOARDING ════════════════════════════════════════════
+let obSelections={step2:'dyslexia',step3:'7',font:'lexend',bg:'cream'};
+
+function obSelect(el){
+  el.closest('.ob-options').querySelectorAll('.ob-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  const step=parseInt(el.closest('.ob-step').id.split('-')[2]);
+  if(step===2) obSelections.step2=el.dataset.val;
+  if(step===3) obSelections.step3=el.dataset.val;
+}
+
+function obSelectGroup(el,group){
+  el.closest('.ob-step').querySelectorAll(`[data-group="${group}"]`).forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  obSelections[group]=el.dataset.val;
+}
+
+function obNext(step){
+  if(step===1) S.profile.name=document.getElementById('ob-name').value.trim();
+  if(step===2) S.profile.learningType=obSelections.step2;
+  if(step===3) S.profile.grade=obSelections.step3;
+  const next=step+1;
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('ob-step-'+next).classList.add('active');
+  for(let i=1;i<=next;i++) document.getElementById('od'+i)?.classList.add('done');
+}
+
+function obFinish(){
+  S.profile.font=obSelections.font; S.profile.bg=obSelections.bg; S.profile.setupDone=true;
+  saveProfile(); launchApp();
+}
+
+function obSkip(){ S.profile.setupDone=true; saveProfile(); launchApp(); }
+
+function launchApp(){
+  document.getElementById('onboarding').classList.add('hidden');
+  document.getElementById('app').style.display='grid';
+  applyProfile(); initApp();
+}
+
+// ══ PROFILE ════════════════════════════════════════════════
+function saveProfile(){
+  try{ localStorage.setItem('sm_profile',JSON.stringify(S.profile)); localStorage.setItem('sm_quadrants',JSON.stringify(S.quadrants)); }catch(e){}
+}
+
+function loadProfile(){
+  try{
+    const raw=localStorage.getItem('sm_profile');
+    if(raw) Object.assign(S.profile,JSON.parse(raw));
+    const qraw=localStorage.getItem('sm_quadrants');
+    if(qraw) Object.assign(S.quadrants,JSON.parse(qraw));
+    const mp=localStorage.getItem('sm_mempad');
+    if(mp){ const el=document.getElementById('memory-pad-input'); if(el) el.value=mp; }
+  }catch(e){}
+}
+
+function applyProfile(){
+  document.body.dataset.font=S.profile.font;
+  document.body.dataset.bg=S.profile.bg;
+  if(S.profile.name) document.getElementById('topbar-name').textContent=S.profile.name;
+  document.getElementById('adhd-tip').textContent=ADHD_TIPS[Math.floor(Math.random()*ADHD_TIPS.length)];
+}
+
+function cycleFont(){
+  const fonts=['lexend','opendyslexic','standard'];
+  S.profile.font=fonts[(fonts.indexOf(S.profile.font)+1)%fonts.length];
+  document.body.dataset.font=S.profile.font; saveProfile();
+  showToast('Font: '+S.profile.font);
+}
+
+// ══ INIT ══════════════════════════════════════════════════
+function initApp(){
+  loadProfile(); applyProfile();
+  startSessionTimer(); loadPhonemeStrip(); loadPassage(2);
+  updateNL(); renderQuadrants(); initTimerCanvas(); sendWelcomeMessage();
+  setInterval(saveProfile,30000);
+  // Memory pad auto-save
+  const mp=document.getElementById('memory-pad-input');
+  if(mp) mp.addEventListener('input',debounce(()=>{ try{localStorage.setItem('sm_mempad',mp.value);}catch(e){} const el=document.getElementById('mempad-saved'); if(el){el.textContent='Saved ✓';setTimeout(()=>{el.textContent=''},2000);}},600));
+}
+
+// ══ SESSION TIMER ════════════════════════════════════════
+function startSessionTimer(){
+  S.session.startTime=Date.now();
+  setInterval(()=>{
+    const elapsed=Math.floor((Date.now()-S.session.startTime)/1000);
+    const m=String(Math.floor(elapsed/60)).padStart(2,'0'), s=String(elapsed%60).padStart(2,'0');
+    document.getElementById('session-timer').textContent=m+':'+s;
+    const pct=Math.min(100,(elapsed/900)*100);
+    const fill=document.getElementById('session-progress-fill');
+    if(fill) fill.style.width=pct+'%';
+    const lbl=document.getElementById('session-progress-label');
+    if(lbl) lbl.textContent=Math.floor(elapsed/60)+' / 15 min';
+  },1000);
+}
+
+// ══ ENGINE SWITCHING ═════════════════════════════════════
+function switchEngine(name){
+  S.engine=name;
+  document.querySelectorAll('.engine-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('engine-'+name).classList.add('active');
+  document.querySelectorAll('.sidebar-btn[data-engine]').forEach(b=>b.classList.toggle('active',b.dataset.engine===name));
+  document.querySelectorAll('.mobile-tab').forEach((t,i)=>{ t.classList.toggle('active',['reading','math','writing','executive'][i]===name); });
+  updateChatSuggestions();
+  if(name==='math') setTimeout(()=>{updateNL();updateAM();},80);
+  if(name==='executive') setTimeout(initTimerCanvas,80);
+}
+
+// ══ READING ENGINE ════════════════════════════════════════
+function setReadingMode(mode){
+  document.querySelectorAll('[data-rmode]').forEach(t=>t.classList.toggle('active',t.dataset.rmode===mode));
+  document.getElementById('passage-bar').style.display=mode==='custom'?'none':'flex';
+  document.getElementById('custom-area').classList.toggle('visible',mode==='custom');
+  document.getElementById('phoneme-mode').style.display=mode==='phoneme'?'block':'none';
+  document.getElementById('passage-display').style.display=mode==='phoneme'?'none':'block';
+  document.getElementById('reading-controls').style.display=mode==='phoneme'?'none':'flex';
+}
+
+function loadPassage(level){
+  S.reading.passageText=PASSAGES[level];
+  document.querySelectorAll('[data-level]').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.level)===level));
+  renderPassage(S.reading.passageText);
+  document.getElementById('reading-controls').style.display='flex';
+}
+
+function loadCustomPassage(){
+  const text=document.getElementById('custom-text-input').value.trim();
+  if(!text){showToast('Paste some text first');return;}
+  S.reading.passageText=text; renderPassage(text);
+  document.getElementById('reading-controls').style.display='flex';
+}
+
+function renderPassage(text){
+  S.reading.words=[];
+  let charPos=0,html='';
+  text.split(/\s+/).filter(w=>w).forEach((word,i)=>{
+    const clean=word.replace(/[.,!?;:'"()]/g,'');
+    S.reading.words.push({text:word,clean,idx:i,start:charPos});
+    if(S.reading.syllablesOn&&clean.length>3){
+      const syls=splitSyllables(clean);
+      const punc=word.slice(clean.length);
+      const parts=syls.map((s,si)=>`<span class="syl-${(si%2)+1}">${s}</span>`).join('');
+      html+=`<span class="word-span" data-start="${charPos}" data-idx="${i}">${parts}${punc}</span> `;
+    } else {
+      html+=`<span class="word-span" data-start="${charPos}" data-idx="${i}">${word}</span> `;
+    }
+    charPos+=word.length+1;
+  });
+  document.getElementById('passage-display').innerHTML=html||'<em style="color:var(--muted)">No text loaded</em>';
+}
+
+function splitSyllables(word){
+  if(word.length<=3) return [word];
+  const v='aeiouAEIOU'; let res=[],cur='',prevV=false;
+  for(let i=0;i<word.length;i++){
+    const isV=v.includes(word[i]);
+    if(!isV&&prevV&&i<word.length-1&&v.includes(word[i+1])&&cur.length>=2){res.push(cur);cur=word[i];}
+    else cur+=word[i];
+    prevV=isV;
+  }
+  if(cur) res.push(cur);
+  return res.length>1?res:[word];
+}
+
+function toggleSyllables(){
+  S.reading.syllablesOn=!S.reading.syllablesOn;
+  document.getElementById('syl-btn').classList.toggle('playing',S.reading.syllablesOn);
+  if(S.reading.passageText) renderPassage(S.reading.passageText);
+}
+
+function toggleTTS(){ S.reading.speaking?stopTTS():startTTS(); }
+
+function startTTS(){
+  if(!S.reading.passageText){showToast('Load a passage first');return;}
+  speechSynthesis.cancel();
+  const utter=new SpeechSynthesisUtterance(S.reading.passageText);
+  utter.rate=S.reading.speed;
+  S.reading.wpmStart=Date.now(); S.reading.wpmWords=0;
+  utter.onboundary=e=>{
+    if(e.name!=='word') return;
+    document.querySelectorAll('.word-span.highlighted').forEach(s=>s.classList.remove('highlighted'));
+    document.querySelectorAll('.word-span').forEach(span=>{
+      const st=parseInt(span.dataset.start);
+      if(st<=e.charIndex&&e.charIndex<st+50){ span.classList.add('highlighted'); span.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    });
+    S.reading.wordsRead++; S.reading.wpmWords++;
+    document.getElementById('words-read-count').textContent=S.reading.wordsRead;
+    const el=(Date.now()-S.reading.wpmStart)/60000;
+    if(el>0) document.getElementById('session-wpm').textContent=Math.round(S.reading.wpmWords/el);
+    addScore(1);
+  };
+  utter.onend=()=>{ S.reading.speaking=false; updateReadingBtn(); clearHighlight(); };
+  utter.onerror=()=>{ S.reading.speaking=false; updateReadingBtn(); };
+  speechSynthesis.speak(utter);
+  S.reading.speaking=true; updateReadingBtn();
+}
+
+function stopTTS(){ speechSynthesis.cancel(); S.reading.speaking=false; updateReadingBtn(); clearHighlight(); }
+function clearHighlight(){ document.querySelectorAll('.word-span.highlighted').forEach(s=>s.classList.remove('highlighted')); }
+function updateReadingBtn(){ const b=document.getElementById('tts-play-btn'); if(b){b.textContent=S.reading.speaking?'⏸ Pause':'▶ Play';b.classList.toggle('playing',S.reading.speaking);} }
+function updateSpeed(v){ S.reading.speed=v/100; document.getElementById('speed-label').textContent=v+'%'; }
+
+function loadPhonemeStrip(){
+  const strip=document.getElementById('phoneme-strip'); if(!strip) return;
+  strip.innerHTML=PHONEMES.map(p=>`<div class="phoneme-card" onclick="speakPhoneme('${p.letter}')"><div class="pc-letter">${p.letter}</div><div class="pc-sound">${p.sound}</div></div>`).join('');
+}
+
+function speakPhoneme(letter){ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(`The letter ${letter} makes the sound ${letter}, ${letter}, ${letter}`); u.rate=0.75; speechSynthesis.speak(u); }
+
+async function requestAIPassage(){
+  showToast('Generating a passage...');
+  const text=await callClaude([{role:'user',content:`Write a short decodable reading passage for grade ${S.profile.grade}. Use simple concrete vocabulary. 3-4 sentences. Return ONLY the passage, nothing else.`}],'You are a literacy expert. Write short decodable passages for students with dyslexia. Keep sentences short.');
+  if(text){ S.reading.passageText=text; renderPassage(text); document.getElementById('reading-controls').style.display='flex'; }
+}
+
+// ══ MATH ENGINE ════════════════════════════════════════════
+function setMathMode(mode){
+  S.math.mode=mode;
+  document.querySelectorAll('[data-mmode]').forEach(t=>t.classList.toggle('active',t.dataset.mmode===mode));
+  document.querySelectorAll('.math-subpanel').forEach(p=>{ p.classList.remove('active'); p.style.display='none'; });
+  const panel=document.getElementById('math-'+mode);
+  if(panel){ panel.classList.add('active'); panel.style.display='block'; }
+  if(mode==='numberline') updateNL();
+  if(mode==='areamodel') updateAM();
+}
+
+function updateNL(){
+  const a=parseInt(document.getElementById('nl-a')?.value)||8;
+  const b=parseInt(document.getElementById('nl-b')?.value)||5;
+  const op=document.getElementById('nl-op')?.value||'+';
+  const result=op==='+'?a+b:a-b;
+  const canvas=document.getElementById('nl-canvas'); if(!canvas) return;
+  const W=canvas.offsetWidth||500; canvas.width=W; canvas.height=100;
+  const ctx=canvas.getContext('2d');
+  const min=Math.max(0,Math.min(a,result)-2),max=Math.max(a,result)+3;
+  const pad=30,step=(W-2*pad)/Math.max(max-min,1),ly=56;
+  ctx.clearRect(0,0,W,100);
+  ctx.beginPath();ctx.moveTo(pad,ly);ctx.lineTo(W-pad,ly);ctx.strokeStyle='#C4B5FF';ctx.lineWidth=3;ctx.stroke();
+  for(let n=min;n<=max;n++){
+    const x=pad+(n-min)*step;
+    ctx.beginPath();ctx.moveTo(x,ly-6);ctx.lineTo(x,ly+6);ctx.strokeStyle=n===a||n===result?'#6248FF':'#C4B5FF';ctx.lineWidth=n===a||n===result?2:1;ctx.stroke();
+    ctx.fillStyle=n===result?'#6248FF':n===a?'#0D9E74':'#6B5F7A';
+    ctx.font=(n===a||n===result?'bold ':'')+' 12px Lexend,sans-serif';ctx.textAlign='center';ctx.fillText(n,x,ly+20);
+  }
+  // Jump arcs
+  const steps=[];
+  if(op==='+'){for(let i=0;i<Math.min(b,20);i++)steps.push([a+i,a+i+1]);}
+  else{for(let i=0;i<Math.min(b,20);i++)steps.push([a-i,a-i-1]);}
+  steps.forEach(([f,t],i)=>{
+    const x1=pad+(f-min)*step,x2=pad+(t-min)*step;
+    ctx.beginPath();ctx.moveTo(x1,ly);ctx.quadraticCurveTo((x1+x2)/2,ly-24-(i%3)*4,x2,ly);
+    ctx.strokeStyle='rgba(98,72,255,.6)';ctx.lineWidth=1.8;ctx.setLineDash([4,2]);ctx.stroke();ctx.setLineDash([]);
+  });
+  [[a,'#0D9E74'],[result,'#6248FF']].forEach(([n,col])=>{ const x=pad+(n-min)*step; ctx.beginPath();ctx.arc(x,ly,7,0,2*Math.PI);ctx.fillStyle=col;ctx.fill(); });
+  ctx.fillStyle='#6248FF';ctx.font='bold 13px Lexend,sans-serif';ctx.textAlign='center';ctx.fillText('= '+result,pad+(result-min)*step,ly-36);
+}
+
+function checkNLAnswer(){
+  const a=parseInt(document.getElementById('nl-a').value)||0;
+  const b=parseInt(document.getElementById('nl-b').value)||0;
+  const op=document.getElementById('nl-op').value;
+  const ans=parseInt(document.getElementById('nl-answer').value);
+  const correct=op==='+'?a+b:a-b;
+  const fb=document.getElementById('nl-feedback'); fb.style.display='block';
+  if(ans===correct){
+    fb.innerHTML=`<div style="background:var(--green-l);border:1px solid rgba(13,158,116,.3);border-radius:var(--r);padding:13px;color:var(--green);font-weight:500">🎉 Yes! ${a} ${op} ${b} = ${correct}. Great job!</div>`;
+    S.math.solved++;document.getElementById('math-solved-count').textContent=S.math.solved;addScore(10);triggerConfetti();S.errorCount=0;
+  } else {
+    fb.innerHTML=`<div style="background:var(--amber-l);border:1px solid rgba(217,119,6,.2);border-radius:var(--r);padding:13px;color:var(--amber)">Almost! Start at ${a} on the number line and count ${b} steps ${op==='+'?'forward':'backward'}. Where do you land?</div>`;
+    S.errorCount++;if(S.errorCount>=3)offerBreak();
+  }
+}
+
+function updateAM(){
+  const a=parseInt(document.getElementById('am-a')?.value)||6;
+  const b=parseInt(document.getElementById('am-b')?.value)||7;
+  const canvas=document.getElementById('am-canvas'); if(!canvas) return;
+  const W=canvas.offsetWidth||460; canvas.width=W; canvas.height=220;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,220);
+  const pad=12,cw=(W-2*pad)/Math.min(b,20),ch=(195-pad)/Math.min(a,20);
+  const cols=['#EDE9FF','#E0F5EE'];
+  for(let r=0;r<Math.min(a,20);r++){
+    for(let c=0;c<Math.min(b,20);c++){
+      ctx.fillStyle=cols[(r+c)%2];ctx.fillRect(pad+c*cw,pad+r*ch,cw-1,ch-1);
+      ctx.strokeStyle='#C4B5FF';ctx.lineWidth=.7;ctx.strokeRect(pad+c*cw,pad+r*ch,cw-1,ch-1);
+    }
+  }
+  ctx.fillStyle='#1A1033';ctx.font='bold 15px Syne,sans-serif';ctx.textAlign='center';
+  ctx.fillText(`${a} × ${b} = ${a*b}`,W/2,215);
+}
+
+function checkAMAnswer(){
+  const a=parseInt(document.getElementById('am-a').value)||6;
+  const b=parseInt(document.getElementById('am-b').value)||7;
+  const ans=parseInt(document.getElementById('am-answer').value);
+  const res=document.getElementById('am-result'); res.style.display='block';
+  if(ans===a*b){res.textContent=`✓ Correct! ${a} × ${b} = ${a*b}`;res.style.color='var(--green)';S.math.solved++;document.getElementById('math-solved-count').textContent=S.math.solved;addScore(10);triggerConfetti();S.errorCount=0;}
+  else{res.textContent=`Not quite — count all the squares in the grid!`;res.style.color='var(--amber)';S.errorCount++;if(S.errorCount>=3)offerBreak();}
+}
+
+async function simplifyWordProblem(){
+  const text=document.getElementById('wp-input').value.trim();
+  if(!text){showToast('Paste a word problem first');return;}
+  document.getElementById('wp-original').textContent=text;
+  const simp=document.getElementById('wp-simplified');
+  simp.style.display='block';simp.textContent='Simplifying...';simp.classList.add('loading-pulse');
+  const result=await callClaude([{role:'user',content:`Simplify this math word problem for a grade ${S.profile.grade} student with dyscalculia. Use shorter sentences. Put key numbers in [brackets]. End with "What do you need to find?"\n\nProblem: ${text}`}],'You are a special education math teacher. Rewrite word problems simply. Maximum 3 sentences. Always end with the question.');
+  simp.classList.remove('loading-pulse');
+  if(result) simp.textContent=result;
+}
+
+async function generateSteps(){
+  const prob=document.getElementById('steps-input').value.trim();
+  if(!prob){showToast('Enter a math problem first');return;}
+  document.getElementById('steps-list').innerHTML='<li style="padding:16px;color:var(--muted);font-size:14px">Thinking through the steps...</li>';
+  const result=await callClaude([{role:'user',content:`Break this math problem into micro-steps for a student with dyscalculia. Each step is ONE action. Include time in seconds. Return ONLY valid JSON array: [{"step":"action","seconds":30}]. Problem: ${prob}`}],'You are a special education math tutor. Return ONLY valid JSON array, no other text. Maximum 8 steps.');
+  if(!result){document.getElementById('steps-list').innerHTML='';return;}
+  let steps;
+  try{steps=JSON.parse(result.replace(/```json|```/g,'').trim());}
+  catch(e){document.getElementById('steps-list').innerHTML='<li style="color:var(--amber);padding:13px">Try rephrasing your problem.</li>';return;}
+  S._steps={steps,done:new Set()};
+  document.getElementById('steps-list').innerHTML=steps.map((s,i)=>`<li class="step-item" id="step-${i}" onclick="toggleStep(${i})"><div class="step-check" id="sc-${i}"></div><div><div class="si-text">${i+1}. ${s.step||s}</div>${s.seconds?`<div class="si-time">~${s.seconds}s</div>`:''}</div></li>`).join('');
+  document.getElementById('steps-progress').style.display='block';
+  updateStepsProgress(steps.length);
+}
+
+function toggleStep(i){
+  if(!S._steps) return;
+  S._steps.done.has(i)?S._steps.done.delete(i):S._steps.done.add(i);
+  document.getElementById('step-'+i)?.classList.toggle('done',S._steps.done.has(i));
+  document.getElementById('sc-'+i)?.classList.toggle('checked',S._steps.done.has(i));
+  updateStepsProgress(S._steps.steps.length);
+  if(S._steps.done.size===S._steps.steps.length){addScore(15);triggerConfetti();showToast('🎉 All steps done!');}
+}
+
+function updateStepsProgress(total){
+  if(!S._steps) return;
+  const done=S._steps.done.size,pct=total?Math.round(done/total*100):0;
+  document.getElementById('steps-progress-bar').style.width=pct+'%';
+  document.getElementById('steps-progress-label').textContent=done+' of '+total+' steps done';
+}
+
+// ══ WRITING ENGINE ════════════════════════════════════════
+function setWritingMode(mode){
+  S.writing.mode=mode;
+  document.querySelectorAll('[data-wmode]').forEach(t=>t.classList.toggle('active',t.dataset.wmode===mode));
+  document.querySelectorAll('.writing-subpanel').forEach(p=>{ p.classList.remove('active'); p.style.display='none'; });
+  const panel=document.getElementById('writing-'+mode);
+  if(panel){ panel.classList.add('active'); panel.style.display='block'; }
+}
+
+function toggleWritingVoice(){ S.writing.voiceActive?stopWritingVoice():startWritingVoice(); }
+
+function startWritingVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast('Voice input not supported. Try Chrome.');return;}
+  S.writing.recognition=new SR();
+  S.writing.recognition.continuous=true; S.writing.recognition.interimResults=true;
+  const tr=document.getElementById('writing-transcript');
+  let finalText=tr.textContent||'';
+  S.writing.recognition.onresult=e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal){finalText+=e.results[i][0].transcript+' ';S.writing.wordsWritten+=e.results[i][0].transcript.split(' ').length;document.getElementById('words-written-count').textContent=S.writing.wordsWritten;}
+      else interim+=e.results[i][0].transcript;
+    }
+    tr.textContent=finalText+interim;
+  };
+  S.writing.recognition.onerror=()=>stopWritingVoice();
+  S.writing.recognition.start(); S.writing.voiceActive=true;
+  document.getElementById('writing-voice-btn').classList.add('recording');
+  document.getElementById('voice-status').textContent='Listening... speak now!';
+}
+
+function stopWritingVoice(){
+  if(S.writing.recognition) S.writing.recognition.stop();
+  S.writing.voiceActive=false;
+  document.getElementById('writing-voice-btn').classList.remove('recording');
+  document.getElementById('voice-status').textContent='Tap to start speaking';
+}
+
+async function cleanTranscript(){
+  const text=document.getElementById('writing-transcript').textContent.trim();
+  if(!text){showToast('Nothing to clean up yet');return;}
+  const cleaned=await callClaude([{role:'user',content:`Clean up this speech transcript. Fix punctuation and capitalization only. Keep the student's voice and ideas EXACTLY as they are. Return ONLY the cleaned text.\n\n${text}`}],'You are a writing assistant. Fix only mechanical errors. Never change ideas or vocabulary.');
+  if(cleaned){ document.getElementById('writing-transcript').textContent=cleaned; showToast('All cleaned up! ✓'); }
+}
+
+function copyTranscript(){ navigator.clipboard?.writeText(document.getElementById('writing-transcript').textContent||''); showToast('Copied!'); }
+function clearTranscript(){ document.getElementById('writing-transcript').textContent=''; showToast('Cleared'); }
+
+async function organizeBrainDump(){
+  const text=document.getElementById('braindump-input').value.trim();
+  if(!text){showToast('Write something first');return;}
+  const result=await callClaude([{role:'user',content:`Organize this student's brain dump into a numbered outline. Group related ideas. Max 5 main points. Keep their exact words. Return ONLY the outline.\n\n${text}`}],'You are a writing coach. Create simple numbered outlines. Use the student\'s language. Keep it short.');
+  if(result){
+    const ol=document.getElementById('braindump-outline');
+    ol.classList.add('visible');
+    ol.innerHTML='<div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px">📋 Your organized outline:</div>'+result.split('\n').filter(l=>l.trim()).map((l,i)=>`<div class="outline-item"><div class="outline-num">${i+1}.</div><div>${l.replace(/^\d+\.\s*/,'')}</div></div>`).join('');
+  }
+}
+
+async function getFrames(){
+  const topic=document.getElementById('frames-topic').value.trim();
+  if(!topic){showToast('Enter a topic first');return;}
+  const fl=document.getElementById('frames-list');
+  fl.innerHTML='<div style="text-align:center;padding:18px;color:var(--muted)">Getting sentence starters...</div>';
+  const result=await callClaude([{role:'user',content:`Give 3 different sentence frame starters for this writing topic: "${topic}". Each starts differently. Return ONLY the 3 starters, one per line, no numbering.`}],'You are a writing teacher. Provide varied sentence frame starters for students with learning differences. Keep them simple.');
+  if(result){
+    const frames=result.split('\n').filter(l=>l.trim()).slice(0,3);
+    fl.innerHTML='<div style="font-size:13px;font-weight:500;color:var(--muted);margin-bottom:9px">Choose a starter:</div>'+frames.map(f=>`<div class="frame-option" onclick="selectFrame(this,'${f.replace(/'/g,"\\\'")}')">${f}</div>`).join('');
+  }
+}
+
+function selectFrame(el,frame){
+  document.querySelectorAll('.frame-option').forEach(f=>f.classList.remove('selected')); el.classList.add('selected');
+  document.getElementById('frames-compose').style.display='block';
+  document.getElementById('frames-continuation').value=frame+' '; document.getElementById('frames-continuation').focus();
+}
+
+function loadEditMode(){
+  const text=document.getElementById('edit-full-input').value.trim();
+  if(!text){showToast('Paste your draft first');return;}
+  S.writing.paras=text.split(/\n\n+/).filter(p=>p.trim());
+  S.writing.paraIdx=0; showPara(0);
+  document.getElementById('para-view').style.display='block';
+}
+
+function showPara(idx){
+  if(idx<0||idx>=S.writing.paras.length) return;
+  S.writing.paraIdx=idx;
+  document.getElementById('para-display').textContent=S.writing.paras[idx];
+  document.getElementById('para-num').textContent=idx+1;
+  document.getElementById('para-indicator').textContent='Paragraph '+(idx+1)+' of '+S.writing.paras.length;
+}
+
+function prevPara(){ showPara(S.writing.paraIdx-1); }
+function nextPara(){ showPara(S.writing.paraIdx+1); }
+
+async function getFeedbackOnPara(){
+  const text=document.getElementById('para-display').textContent.trim();
+  if(!text) return;
+  await sendChatMessage('Can you give me feedback on this paragraph: '+text.slice(0,300));
+  toggleChat(true);
+}
+
+function usePrompt(el){ setWritingMode('voice'); document.getElementById('writing-transcript').textContent=el.textContent.replace(/['"]/g,'')+' '; }
+
+// ══ EXECUTIVE ENGINE ══════════════════════════════════════
+function setExecMode(mode){
+  S.exec.mode=mode;
+  document.querySelectorAll('[data-emode]').forEach(t=>t.classList.toggle('active',t.dataset.emode===mode));
+  document.querySelectorAll('.exec-subpanel').forEach(p=>{ p.classList.remove('active'); p.style.display='none'; });
+  const panel=document.getElementById('exec-'+mode);
+  if(panel){ panel.classList.add('active'); panel.style.display='block'; }
+  if(mode==='timer') setTimeout(initTimerCanvas,60);
+}
+
+async function decomposeTask(){
+  const assignment=document.getElementById('task-assignment-input').value.trim();
+  if(!assignment){showToast('Paste your assignment first');return;}
+  const btn=document.getElementById('decompose-btn');
+  btn.disabled=true; btn.innerHTML='<span class="loading-pulse">Breaking it down...</span>';
+  const result=await callClaude([{role:'user',content:`Break this homework assignment into micro-tasks for a student with ADHD. Each task takes 5-15 minutes max. Be specific. Return ONLY valid JSON: [{"task":"specific action","minutes":10}]. Assignment: ${assignment}`}],'You are an ADHD coach. Return ONLY valid JSON array. Max 10 items. Very specific actionable steps.');
+  btn.disabled=false; btn.innerHTML='<span>✨ Break it into steps</span>';
+  if(!result) return;
+  let tasks; try{tasks=JSON.parse(result.replace(/```json|```/g,'').trim());}catch(e){showToast('Try again with a different description');return;}
+  S.exec.tasks=tasks.map((t,i)=>({id:i,text:t.task||t,minutes:t.minutes||10,done:false}));
+  renderTaskList();
+}
+
+function renderTaskList(){
+  document.getElementById('task-checklist').innerHTML=S.exec.tasks.map((t,i)=>`
+    <div class="task-item ${t.done?'done':''} ${i===0&&!t.done?'current-task':''}" id="task-${t.id}" onclick="toggleTask(${t.id})">
+      <div class="ti-checkbox ${t.done?'checked':''}" id="tc-${t.id}"></div>
+      <div><div class="ti-text">${t.text}</div><div class="ti-meta">~${t.minutes} min</div></div>
+    </div>`).join('');
+  document.getElementById('task-progress-wrap').style.display='block';
+  updateTaskProgress();
+}
+
+function toggleTask(id){
+  const t=S.exec.tasks.find(x=>x.id===id); if(!t) return;
+  t.done=!t.done;
+  document.getElementById('task-'+id)?.classList.toggle('done',t.done);
+  document.getElementById('tc-'+id)?.classList.toggle('checked',t.done);
+  if(t.done){ S.exec.tasksDone++; document.getElementById('tasks-done-count').textContent=S.exec.tasksDone; addScore(5); }
+  updateTaskProgress();
+  const allDone=S.exec.tasks.every(x=>x.done);
+  if(allDone){ triggerConfetti(); showToast('🎉 All done! You crushed it!'); addScore(20); }
+  document.querySelectorAll('.task-item').forEach(el=>el.classList.remove('current-task'));
+  const next=S.exec.tasks.find(x=>!x.done);
+  if(next) document.getElementById('task-'+next.id)?.classList.add('current-task');
+}
+
+function updateTaskProgress(){
+  const total=S.exec.tasks.length; if(!total) return;
+  const done=S.exec.tasks.filter(t=>t.done).length,pct=Math.round(done/total*100);
+  document.getElementById('task-progress-fill').style.width=pct+'%';
+  document.getElementById('task-progress-label').textContent=done+' of '+total+' tasks complete';
+}
+
+// ── POMODORO TIMER ────────────────────────────────────────
+let timerWorkSecs=900,timerBreakSecs=300,timerRunning=false,timerPaused=false,timerInterval=null,timerRemaining=900;
+
+function initTimerCanvas(){
+  const canvas=document.getElementById('timer-canvas'); if(!canvas) return;
+  timerRemaining=timerWorkSecs; drawTimerRing(1);
+}
+
+function drawTimerRing(fraction){
+  const canvas=document.getElementById('timer-canvas'); if(!canvas) return;
+  const ctx=canvas.getContext('2d'),cx=80,cy=80,R=66;
+  ctx.clearRect(0,0,160,160);
+  ctx.beginPath();ctx.arc(cx,cy,R,0,2*Math.PI);ctx.strokeStyle='#EDE9FF';ctx.lineWidth=11;ctx.stroke();
+  if(fraction>0){
+    ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+(2*Math.PI*fraction));
+    ctx.strokeStyle=S.exec.timerMode==='break'?'#0D9E74':'#6248FF';ctx.lineWidth=11;ctx.lineCap='round';ctx.stroke();
+  }
+}
+
+function updateTimerSettings(){
+  timerWorkSecs=parseInt(document.getElementById('timer-work-sel').value)*60;
+  timerBreakSecs=parseInt(document.getElementById('timer-break-sel').value)*60;
+  document.getElementById('timer-work-display').textContent=timerWorkSecs/60;
+  document.getElementById('timer-break-display').textContent=timerBreakSecs/60;
+  if(!timerRunning){ timerRemaining=S.exec.timerMode==='work'?timerWorkSecs:timerBreakSecs; updateTimerDisplay(timerRemaining); drawTimerRing(1); }
+}
+
+function startTimer(){
+  if(timerRunning) return;
+  timerRunning=true;
+  if(!timerPaused){ timerRemaining=S.exec.timerMode==='work'?timerWorkSecs:timerBreakSecs; }
+  timerPaused=false;
+  const total=S.exec.timerMode==='work'?timerWorkSecs:timerBreakSecs;
+  document.getElementById('timer-start-btn').style.display='none';
+  document.getElementById('timer-pause-btn').style.display='inline-block';
+  timerInterval=setInterval(()=>{
+    timerRemaining--;
+    updateTimerDisplay(timerRemaining);
+    drawTimerRing(timerRemaining/total);
+    if(S.exec.timerMode==='work'&&timerRemaining%60===0&&timerRemaining<total){ S.exec.focusMinutes++;document.getElementById('focus-minutes-count').textContent=S.exec.focusMinutes; }
+    if(timerRemaining<=0){ clearInterval(timerInterval);timerRunning=false;timerComplete(); }
+  },1000);
+}
+
+function pauseTimer(){
+  clearInterval(timerInterval); timerRunning=false; timerPaused=true;
+  document.getElementById('timer-start-btn').style.display='inline-block';
+  document.getElementById('timer-pause-btn').style.display='none';
+}
+
+function resetTimer(){
+  clearInterval(timerInterval); timerRunning=false; timerPaused=false; S.exec.timerMode='work';
+  timerRemaining=timerWorkSecs; updateTimerDisplay(timerWorkSecs); drawTimerRing(1);
+  document.getElementById('timer-display-mode').textContent='FOCUS';
+  document.getElementById('timer-start-btn').style.display='inline-block';
+  document.getElementById('timer-pause-btn').style.display='none';
+}
+
+function timerComplete(){
+  document.getElementById('timer-start-btn').style.display='inline-block';
+  document.getElementById('timer-pause-btn').style.display='none';
+  timerPaused=false;
+  if(S.exec.timerMode==='work'){
+    S.exec.timerMode='break';
+    document.getElementById('timer-display-mode').textContent='BREAK';
+    document.getElementById('timer-mode-label').textContent='Break Time — you earned it!';
+    timerRemaining=timerBreakSecs; updateTimerDisplay(timerBreakSecs); drawTimerRing(1);
+    showToast('Focus done! Take a break 🎉'); addScore(10); triggerConfetti();
+    speakText('Great job! Take a break. You earned it!');
+  } else {
+    S.exec.timerMode='work';
+    document.getElementById('timer-display-mode').textContent='FOCUS';
+    document.getElementById('timer-mode-label').textContent='Focus Session';
+    timerRemaining=timerWorkSecs; updateTimerDisplay(timerWorkSecs); drawTimerRing(1);
+    showToast('Break over — ready to focus!');
+    speakText("Break is over. Let's get back to work. You can do this!");
+  }
+}
+
+function updateTimerDisplay(secs){
+  const m=String(Math.floor(secs/60)).padStart(2,'0'),s=String(secs%60).padStart(2,'0');
+  document.getElementById('timer-display-time').textContent=m+':'+s;
+}
+
+// ── PRIORITY MATRIX ───────────────────────────────────────
+function addToQuadrant(e,qid){
+  if(e.key!=='Enter') return;
+  const text=e.target.value.trim(); if(!text) return;
+  S.quadrants[qid].push(text); e.target.value='';
+  renderQuadrant(qid); saveProfile();
+}
+
+function renderQuadrant(qid){
+  const container=document.getElementById('q-'+qid); if(!container) return;
+  container.innerHTML=S.quadrants[qid].map((item,i)=>`<div class="q-item"><span>${item}</span><button class="q-item-del" onclick="removeFromQuadrant('${qid}',${i})">✕</button></div>`).join('');
+}
+
+function removeFromQuadrant(qid,i){ S.quadrants[qid].splice(i,1); renderQuadrant(qid); saveProfile(); }
+function renderQuadrants(){ ['q1','q2','q3','q4'].forEach(q=>renderQuadrant(q)); }
+
+function copyMemPad(){ navigator.clipboard?.writeText(document.getElementById('memory-pad-input').value||''); showToast('Copied!'); }
+function clearMemPad(){ document.getElementById('memory-pad-input').value=''; try{localStorage.removeItem('sm_mempad');}catch(e){} showToast('Cleared'); }
+
+// ══ AI CHAT ══════════════════════════════════════════════
+function buildSystemPrompt(){
+  const name=S.profile.name?`Student's name is ${S.profile.name}. `:'';
+  return `You are SpecialMinds, a warm patient AI tutor for students with learning differences.
+${name}Grade: ${S.profile.grade}. Learning challenge: ${S.profile.learningType}. Current engine: ${S.engine}.
+
+ABSOLUTE RULES — never violate:
+1. Never more than 2 sentences before a line break or question.
+2. Never say "wrong" or "incorrect." Say "Let's try again — you're close!" or "Almost! Here's a hint."
+3. If errorCount=${S.errorCount} is 3 or more, offer a break before continuing.
+4. Only use vocabulary a grade ${S.profile.grade} student knows. Define any harder word immediately.
+5. Comment on effort and ideas BEFORE mechanics or spelling.
+6. ONE instruction per sentence — never two at once.
+7. Specific praise only: not "Good job!" but "You got every short-a sound right in that word!"
+8. If student says anything like "I hate myself" or "I'm stupid" — STOP instruction. Respond with warmth only. Say their feelings are valid and suggest talking to a trusted adult.
+9. Keep ALL responses SHORT. Students with learning differences need brevity.
+10. For READING: use Orton-Gillingham language. "The letter B makes the /b/ sound as in ball."
+11. For MATH: always offer a visual model before abstract symbols.
+12. For WRITING: ideas first, never mention spelling first.
+13. For FOCUS: one task at a time. Celebrate every completion.`;
+}
+
+function getEngineSuggestions(){
+  return {
+    reading:['Can you help me read this word?','What does this word mean?','Give me a hint on the sound','Read this with me'],
+    math:["I don't understand this problem",'Can you show me another way?','What does this symbol mean?','I need a hint'],
+    writing:['Help me start my sentence','Is my idea clear?','What should I write next?','Can you clean up my writing?'],
+    executive:["I can't start this task","I'm feeling overwhelmed",'How do I break this down?','I need a brain break']
+  }[S.engine]||['Can you help me?','Give me a hint','I need a break'];
+}
+
+function updateChatSuggestions(){
+  const container=document.getElementById('chat-suggestions'); if(!container) return;
+  container.innerHTML=getEngineSuggestions().map(s=>`<div class="sugg-chip" onclick="useSuggestion(this)">${s}</div>`).join('');
+}
+
+function useSuggestion(el){ document.getElementById('chat-input').value=el.textContent; sendChat(); }
+
+function sendWelcomeMessage(){
+  const name=S.profile.name?' '+S.profile.name:'';
+  appendChatMsg('ai',`Hi${name}! 👋 I'm your SpecialMinds tutor. I'm here to help you today. What would you like to work on first?`);
+}
+
+function appendChatMsg(role,text){
+  const container=document.getElementById('chat-messages'); if(!container) return;
+  const div=document.createElement('div'); div.className='chat-msg '+role;
+  div.innerHTML=`<div class="chat-bubble">${text}</div>`;
+  container.appendChild(div); container.scrollTop=container.scrollHeight;
+}
+
+function appendTyping(){
+  const container=document.getElementById('chat-messages'); if(!container) return;
+  const div=document.createElement('div'); div.className='chat-msg ai'; div.id='typing-indicator';
+  div.innerHTML=`<div class="chat-bubble" style="padding:12px 16px"><div class="chat-typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  container.appendChild(div); container.scrollTop=container.scrollHeight;
+}
+
+function removeTyping(){ document.getElementById('typing-indicator')?.remove(); }
+
+async function sendChat(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim(); if(!text||S.chat.loading) return;
+  input.value=''; input.style.height='38px';
+  appendChatMsg('user',text);
+  await sendChatMessage(text);
+}
+
+async function sendChatMessage(text){
+  S.chat.loading=true;
+  S.chat.messages.push({role:'user',content:text});
+  if(S.chat.messages.length>14) S.chat.messages=S.chat.messages.slice(-14);
+  appendTyping(); toggleChat(true);
+  const reply=await callClaude(S.chat.messages,buildSystemPrompt());
+  removeTyping(); S.chat.loading=false;
+  if(reply){
+    S.chat.messages.push({role:'assistant',content:reply});
+    appendChatMsg('ai',reply.replace(/\n/g,'<br>'));
+  }
+}
+
+function chatKeydown(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendChat(); } }
+function autoResizeChat(el){ el.style.height='38px'; el.style.height=Math.min(el.scrollHeight,96)+'px'; }
+
+let chatVoiceActive=false,chatRecognition=null;
+function toggleChatVoice(){
+  if(chatVoiceActive){ if(chatRecognition) chatRecognition.stop(); chatVoiceActive=false; document.getElementById('chat-voice-btn').classList.remove('recording'); return; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast('Voice not supported on this browser');return;}
+  chatRecognition=new SR();
+  chatRecognition.onresult=e=>{ document.getElementById('chat-input').value=e.results[0][0].transcript; };
+  chatRecognition.onend=()=>{ chatVoiceActive=false; document.getElementById('chat-voice-btn').classList.remove('recording'); };
+  chatRecognition.start(); chatVoiceActive=true;
+  document.getElementById('chat-voice-btn').classList.add('recording');
+}
+
+function toggleChat(forceOpen=false){
+  const app=document.getElementById('app');
+  if(forceOpen&&!app.classList.contains('chat-closed')) return;
+  app.classList.toggle('chat-closed');
+  document.getElementById('chat-toggle-btn')?.classList.toggle('active',!app.classList.contains('chat-closed'));
+}
+
+// ══ ANTHROPIC API ════════════════════════════════════════
+async function callClaude(messages,systemPrompt){
+  try{
+    // Works on both Vercel (/api/chat) and Netlify (/.netlify/functions/chat)
+    const apiUrl = window.location.hostname.includes('netlify') || window.location.hostname.includes('localhost')
+      ? '/.netlify/functions/chat'
+      : '/api/chat';
+    const res=await fetch(apiUrl,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages,system:systemPrompt})
+    });
+    if(!res.ok) throw new Error('API '+res.status);
+    const data=await res.json();
+    return data.content?.[0]?.text||null;
+  }catch(err){
+    if(err.message.includes('Failed to fetch')||err.message.includes('NetworkError')) return offlineFallback(messages[messages.length-1]?.content||'');
+    showToast('Tutor unavailable — try again in a moment.');
+    return null;
+  }
+}
+
+function offlineFallback(msg){
+  const m=msg.toLowerCase();
+  if(m.includes('hint')||m.includes('help')) return "Great question! What do you already know about this? Start with the part you're most sure about.";
+  if(m.includes('break')||m.includes('tired')||m.includes('stuck')) return "Taking a break is smart! Your brain resets and works better afterward. Try 2 minutes away from the screen.";
+  if(m.includes('word')||m.includes('mean')) return "Let's break that word into smaller parts. Can you find any smaller words you recognize inside it?";
+  return "You're doing great just by trying! Tell me the specific part that's tricky and we'll work through it together.";
+}
+
+// ══ UTILITIES ════════════════════════════════════════════
+function showToast(msg,dur=2800){
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('visible');
+  setTimeout(()=>el.classList.remove('visible'),dur);
+}
+
+function speakText(text){ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.rate=0.88; speechSynthesis.speak(u); }
+
+function addScore(pts){
+  S.session.score+=pts;
+  const chip=document.getElementById('score-chip');
+  document.getElementById('session-score').textContent=S.session.score;
+  if(chip) chip.style.display='flex';
+}
+
+function offerBreak(){
+  if(document.getElementById('break-offer')) return;
+  const container=document.getElementById('chat-messages'); if(!container) return;
+  const div=document.createElement('div'); div.id='break-offer'; div.className='chat-msg system';
+  div.innerHTML=`<div class="chat-bubble">You've been working really hard! Want a 2-minute break? <button onclick="quickBreak()" style="background:var(--amber);color:#fff;border:none;border-radius:100px;padding:3px 12px;font-size:12px;margin-left:7px;cursor:pointer">Start break</button></div>`;
+  container.appendChild(div); container.scrollTop=container.scrollHeight;
+  toggleChat(true);
+}
+
+function quickBreak(){
+  document.getElementById('break-offer')?.remove();
+  switchEngine('executive'); setExecMode('timer');
+  S.exec.timerMode='break'; timerRemaining=timerBreakSecs;
+  document.getElementById('timer-display-mode').textContent='BREAK';
+  document.getElementById('timer-mode-label').textContent='Break Time!';
+  updateTimerDisplay(timerBreakSecs); drawTimerRing(1); startTimer();
+}
+
+function triggerConfetti(){
+  const canvas=document.getElementById('confetti-canvas');
+  canvas.style.display='block'; canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const ctx=canvas.getContext('2d');
+  const pieces=Array.from({length:55},()=>({
+    x:Math.random()*canvas.width,y:-8,vx:(Math.random()-.5)*4,vy:Math.random()*4+2,
+    size:Math.random()*7+4,rotation:Math.random()*360,vr:(Math.random()-.5)*7,
+    color:['#6248FF','#0D9E74','#D97706','#EF4444','#8B5CF6','#EC4899'][Math.floor(Math.random()*6)]
+  }));
+  let frame=0;
+  const anim=()=>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{ p.x+=p.vx;p.y+=p.vy;p.rotation+=p.vr;p.vy+=.07;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rotation*Math.PI/180);
+      ctx.fillStyle=p.color;ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*.6);ctx.restore();
+    });
+    frame++;
+    if(frame<85) requestAnimationFrame(anim);
+    else{ ctx.clearRect(0,0,canvas.width,canvas.height);canvas.style.display='none'; }
+  };
+  requestAnimationFrame(anim);
+}
+
+function debounce(fn,delay){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),delay); }; }
+
+// ══ BOOT ════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  loadProfile();
+  if(S.profile.setupDone){
+    document.getElementById('onboarding').classList.add('hidden');
+    document.getElementById('app').style.display='grid';
+    applyProfile(); initApp();
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable) return;
+    if(e.key==='1') switchEngine('reading');
+    if(e.key==='2') switchEngine('math');
+    if(e.key==='3') switchEngine('writing');
+    if(e.key==='4') switchEngine('executive');
+    if(e.key==='t') toggleChat();
+    if(e.key===' '&&S.engine==='reading'){e.preventDefault();toggleTTS();}
+  });
+});
+</script>
+</body>
+</html>
