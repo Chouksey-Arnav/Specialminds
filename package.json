@@ -1,0 +1,40 @@
+{
+  "name": "specialminds",
+  "version": "1.0.0",
+  "description": "Free AI tutor for students with dyslexia, ADHD, dyscalculia, and dysgraphia. Built by Arnav, Apex NC.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve . -p 3000",
+    "build": "echo 'No build step — pure HTML/CSS/JS'",
+    "lint": "echo 'No linting configured'",
+    "test": "echo 'No tests configured yet'"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "keywords": [
+    "dyslexia",
+    "adhd",
+    "special-education",
+    "ai-tutor",
+    "orton-gillingham",
+    "dyscalculia",
+    "dysgraphia",
+    "accessibility",
+    "edtech",
+    "free"
+  ],
+  "author": {
+    "name": "Arnav",
+    "url": "https://github.com/arnav"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arnav/specialminds"
+  },
+  "homepage": "https://specialminds.app"
+}
