@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — SpecialMinds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Lexend:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Lexend',sans-serif;background:#FDF8F0;color:#1A1033;line-height:1.75;font-size:17px;padding:0 16px}
+.nav{max-width:800px;margin:0 auto;padding:20px 0;display:flex;align-items:center;gap:10px}
+.nav-logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#6248FF;display:flex;align-items:center;gap:7px;text-decoration:none}
+.nav-logo span{background:#6248FF;color:#fff;width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.back{margin-left:auto;color:#6248FF;font-size:14px;text-decoration:none}
+.container{max-width:800px;margin:0 auto;padding:40px 0 80px}
+h1{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;margin-bottom:8px;color:#1A1033}
+.effective{font-size:14px;color:#6B5F7A;margin-bottom:48px}
+h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin:40px 0 14px;color:#1A1033}
+h3{font-size:17px;font-weight:600;margin:24px 0 10px}
+p{margin-bottom:14px;color:#2D2040}
+ul{margin:10px 0 14px 24px;color:#2D2040}
+ul li{margin-bottom:8px}
+.highlight-box{background:#EDE9FF;border:1.5px solid #C4B5FF;border-radius:12px;padding:20px 24px;margin:24px 0}
+.highlight-box.green{background:#E0F5EE;border-color:rgba(13,158,116,.3)}
+.highlight-box.amber{background:#FEF3C7;border-color:rgba(217,119,6,.25)}
+.highlight-box h3{margin-top:0;color:#6248FF}
+.highlight-box.green h3{color:#0D9E74}
+.highlight-box.amber h3{color:#D97706}
+hr{border:none;border-top:1px solid #E8E1FF;margin:40px 0}
+a{color:#6248FF}
+.contact-box{background:#fff;border:1px solid #E8E1FF;border-radius:12px;padding:24px;margin-top:32px}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a class="nav-logo" href="index.html"><span>S</span>SpecialMinds</a>
+  <a class="back" href="index.html">← Back to home</a>
+</nav>
+
+<div class="container">
+  <h1>Privacy Policy</h1>
+  <div class="effective">Last updated: May 2026 · Effective immediately</div>
+
+  <div class="highlight-box green">
+    <h3>The short version</h3>
+    <p>SpecialMinds is built for children. We collect almost nothing. Your learning data stays on your device. We never sell data. We never show ads. Students under 13 never need an account or email address.</p>
+  </div>
+
+  <h2>1. Who we are</h2>
+  <p>SpecialMinds is a free AI tutoring platform built for students with dyslexia, ADHD, dyscalculia, and dysgraphia. It was created by Arnav, a student in Apex, North Carolina. The platform is hosted at specialminds.app.</p>
+  <p>Because SpecialMinds is designed to be used by children, we take privacy seriously and have designed the entire system to collect as little information as possible.</p>
+
+  <h2>2. What data we collect — and don't collect</h2>
+  <h3>Students (under 18)</h3>
+  <ul>
+    <li><strong>Name (optional):</strong> If you enter your name during setup, it is stored only in your browser's localStorage on your device. It is never sent to our servers.</li>
+    <li><strong>Learning preferences:</strong> Your font choice, background color, grade level, and learning type are stored in your browser's localStorage only. Never sent to servers.</li>
+    <li><strong>Session progress:</strong> Words read, tasks completed, session duration — all stored in localStorage on your device only.</li>
+    <li><strong>AI chat messages:</strong> When you chat with the AI tutor, your messages are sent to our secure serverless function and then to Anthropic's API. We do NOT log, store, or retain these messages on any server after the API response is returned.</li>
+  </ul>
+  <div class="highlight-box">
+    <h3>We never collect from students:</h3>
+    <ul style="margin-bottom:0">
+      <li>Email addresses</li>
+      <li>Phone numbers</li>
+      <li>Real names (the name field is always optional)</li>
+      <li>Location data</li>
+      <li>Photos or camera access</li>
+      <li>Device identifiers or advertising IDs</li>
+      <li>IP addresses (not logged by our serverless functions)</li>
+    </ul>
+  </div>
+
+  <h3>Teachers (Teacher Dashboard)</h3>
+  <ul>
+    <li><strong>Teacher name and PIN:</strong> Stored in your browser's localStorage. Never sent to any server.</li>
+    <li><strong>Class and student data:</strong> All class rosters, IEP goals, and student progress data you enter in the Teacher Dashboard are stored in your browser's localStorage. None of it is sent to SpecialMinds servers.</li>
+    <li><strong>IEP Generator:</strong> When you use the AI-powered IEP Generator, the student information you enter is sent to our serverless function and then to Anthropic's API to generate the draft. We do not log or retain this information after the response is returned.</li>
+  </ul>
+
+  <h2>3. How we use data</h2>
+  <p>The only reason any data leaves your device is to power the AI tutor chat. When you send a message to the AI tutor, here is exactly what happens:</p>
+  <ul>
+    <li>Your message is sent to our serverless function (hosted on Vercel or Netlify).</li>
+    <li>Our function strips any phone numbers, email addresses, or Social Security numbers from your message before forwarding it.</li>
+    <li>The sanitized message is sent to Anthropic's Claude API to generate a response.</li>
+    <li>The response is returned to your browser.</li>
+    <li>Nothing is saved, logged, or stored on our server. The serverless function is stateless — it processes the request and forgets it.</li>
+  </ul>
+
+  <h2>4. COPPA Compliance (Children's Online Privacy Protection Act)</h2>
+  <div class="highlight-box green">
+    <h3>COPPA compliance statement</h3>
+    <p>SpecialMinds is designed to comply with COPPA. We do not collect personal information from children under 13 without verifiable parental consent. Because our architecture stores all student data locally on the student's device and never requires an email address or account creation, students under 13 can use SpecialMinds without any parental consent process being required.</p>
+  </div>
+  <p>Specifically, for students under 13:</p>
+  <ul>
+    <li>No account or email address is required.</li>
+    <li>No personal information is transmitted to our servers except the content of AI chat messages (which are not stored).</li>
+    <li>Parents can request deletion of any data by clearing the browser's localStorage on their child's device (Settings → Privacy → Clear browsing data in any browser).</li>
+    <li>We do not use persistent identifiers for students.</li>
+    <li>We do not show behavioral advertising to any users.</li>
+  </ul>
+
+  <h2>5. FERPA Compliance (Family Educational Rights and Privacy Act)</h2>
+  <p>When SpecialMinds is used in a school setting, we are designed to comply with FERPA's requirements for educational technology vendors:</p>
+  <ul>
+    <li><strong>No education records transmitted:</strong> IEP documents, grades, and official education records are never sent to SpecialMinds servers. Teachers enter IEP goals directly into their local Teacher Dashboard; these goals stay on the teacher's device.</li>
+    <li><strong>Data Processing Agreement:</strong> Schools adopting SpecialMinds can request a signed Data Processing Agreement (DPA) confirming our data practices. Contact us at the address below.</li>
+    <li><strong>No third-party sharing:</strong> We do not share any student or teacher data with third parties, data brokers, or advertisers.</li>
+    <li><strong>Anthropic:</strong> AI chat messages are processed by Anthropic (Claude API). Anthropic's enterprise API does not use API inputs to train models. See <a href="https://www.anthropic.com/privacy" target="_blank">anthropic.com/privacy</a>.</li>
+  </ul>
+
+  <h2>6. Third-party services</h2>
+  <ul>
+    <li><strong>Google Fonts:</strong> We load the Lexend and Syne fonts from Google Fonts. Google's font CDN may log your IP address per their standard CDN practices. See <a href="https://policies.google.com/privacy" target="_blank">Google Privacy Policy</a>.</li>
+    <li><strong>cdnfonts.com:</strong> We load the OpenDyslexic font from CDNFonts. Their CDN may log basic access data.</li>
+    <li><strong>Anthropic (Claude API):</strong> AI responses are powered by Anthropic's Claude. Messages sent to the tutor are processed by Anthropic. Anthropic does not use API data to train models per their enterprise API terms. See <a href="https://www.anthropic.com/privacy" target="_blank">Anthropic Privacy Policy</a>.</li>
+    <li><strong>Vercel / Netlify:</strong> Our serverless functions are hosted on Vercel and Netlify. These platforms may log function invocation metadata (not message content) per their standard infrastructure logging. See <a href="https://vercel.com/legal/privacy-policy" target="_blank">Vercel Privacy Policy</a> and <a href="https://www.netlify.com/privacy/" target="_blank">Netlify Privacy Policy</a>.</li>
+  </ul>
+
+  <h2>7. Cookies and localStorage</h2>
+  <p>SpecialMinds does not use cookies. We use the browser's localStorage API to store your preferences and progress on your own device. This data:</p>
+  <ul>
+    <li>Never leaves your device automatically</li>
+    <li>Can be cleared at any time via your browser settings</li>
+    <li>Is not accessible by any other website</li>
+    <li>Is not used for advertising or tracking</li>
+  </ul>
+
+  <h2>8. Voice and microphone</h2>
+  <p>SpecialMinds has optional voice input features (voice-to-text drafting in the Writing Coach and voice input in the AI chat). If you use these features:</p>
+  <ul>
+    <li>Voice processing is handled entirely by your browser's built-in Web Speech API.</li>
+    <li>Audio is never recorded, stored, or transmitted to SpecialMinds servers.</li>
+    <li>The browser will ask your permission before accessing the microphone. You can deny this permission and all other features will still work.</li>
+  </ul>
+
+  <h2>9. Data retention and deletion</h2>
+  <p>Since all student data is stored in your browser's localStorage, you have complete control over deletion:</p>
+  <ul>
+    <li><strong>Students:</strong> Clear your browser's localStorage or site data to delete all SpecialMinds data from your device.</li>
+    <li><strong>Teachers:</strong> Use the "Clear all data" button in Dashboard → Settings, or clear your browser's localStorage.</li>
+    <li><strong>AI chat messages:</strong> Not retained after the API response is returned. There is nothing to delete server-side.</li>
+  </ul>
+
+  <h2>10. Security</h2>
+  <ul>
+    <li>All connections to SpecialMinds are encrypted via HTTPS/TLS.</li>
+    <li>Our Anthropic API key is stored as a server-side environment variable and never exposed to the browser or client-side code.</li>
+    <li>Our serverless functions validate and sanitize all input before processing.</li>
+    <li>Content Security Policy headers prevent cross-site scripting (XSS) attacks.</li>
+  </ul>
+
+  <h2>11. Changes to this policy</h2>
+  <p>If we make material changes to this privacy policy, we will update the "Last updated" date at the top of this page and, where required by law, provide additional notice. Continued use of SpecialMinds after changes take effect constitutes acceptance of the updated policy.</p>
+
+  <h2>12. Contact us</h2>
+  <div class="contact-box">
+    <p>For privacy questions, FERPA Data Processing Agreements, COPPA parent requests, or any other concerns:</p>
+    <p><strong>Email:</strong> <a href="mailto:privacy@specialminds.app">privacy@specialminds.app</a></p>
+    <p><strong>Project:</strong> <a href="https://github.com/arnav/specialminds" target="_blank">github.com/arnav/specialminds</a></p>
+    <p style="margin-bottom:0;font-size:14px;color:#6B5F7A;margin-top:12px">SpecialMinds is a student-built nonprofit project. Response times may vary but we take privacy seriously and will respond to all legitimate requests.</p>
+  </div>
+
+  <hr>
+  <p style="font-size:13px;color:#6B5F7A;text-align:center">SpecialMinds · Built by Arnav, Apex NC · Free forever for students · <a href="index.html">Home</a> · <a href="app.html">Open App</a></p>
+</div>
+</body>
+</html>
