@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpecialMinds — Teacher Dashboard</title>
+<meta name="theme-color" content="#6248FF">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Lexend:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F7FF;--surface:#fff;--surface-alt:#F0ECFF;
+  --purple:#6248FF;--purple-d:#4A34E0;--purple-l:#EDE9FF;--purple-mid:#C4B5FF;
+  --green:#0D9E74;--green-l:#E0F5EE;--amber:#D97706;--amber-l:#FEF3C7;
+  --red:#DC2626;--red-l:#FEE2E2;
+  --text:#1A1033;--muted:#6B5F7A;--border:#E0DAFF;
+  --r:12px;--r-lg:20px;--shadow:0 2px 12px rgba(98,72,255,.07);--shadow-md:0 6px 28px rgba(98,72,255,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Lexend',sans-serif;background:var(--bg);color:var(--text);font-size:16px;line-height:1.6;min-height:100vh}
+button{cursor:pointer;font-family:'Lexend',sans-serif;border:none}
+input,select,textarea{font-family:'Lexend',sans-serif;font-size:15px;outline:none}
+
+/* ── AUTH OVERLAY ─────────────────────────────────────── */
+#auth-screen{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+#auth-screen.hidden{display:none}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:44px;max-width:440px;width:100%;box-shadow:var(--shadow-md);text-align:center}
+.auth-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--purple);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.auth-logo span{background:var(--purple);color:#fff;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.auth-subtitle{font-size:13px;color:var(--muted);margin-bottom:32px}
+.auth-label{display:block;font-size:13px;font-weight:500;color:var(--muted);text-align:left;margin-bottom:6px}
+.auth-input{width:100%;border:1.5px solid var(--border);border-radius:var(--r);padding:12px 16px;font-size:16px;margin-bottom:16px;background:var(--bg);color:var(--text);transition:border-color .2s}
+.auth-input:focus{border-color:var(--purple);outline:none}
+.auth-btn{width:100%;background:var(--purple);color:#fff;border:none;border-radius:100px;padding:14px;font-size:16px;font-weight:500;cursor:pointer;transition:background .2s;margin-top:4px}
+.auth-btn:hover{background:var(--purple-d)}
+.auth-note{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.6}
+.auth-error{color:var(--red);font-size:13px;margin-bottom:12px;display:none}
+
+/* ── TOPBAR ────────────────────────────────────────────── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:50}
+.topbar-logo{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--purple);display:flex;align-items:center;gap:7px}
+.tl-icon{background:var(--purple);color:#fff;width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.topbar-badge{background:var(--green-l);color:var(--green);font-size:12px;font-weight:500;padding:4px 10px;border-radius:100px;border:1px solid rgba(13,158,116,.2)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.topbar-btn{background:var(--surface-alt, #F0ECFF);border:1px solid var(--border);border-radius:var(--r);padding:7px 14px;font-size:13px;color:var(--text);transition:all .2s}
+.topbar-btn:hover{border-color:var(--purple-mid);color:var(--purple)}
+.teacher-name{font-size:14px;font-weight:500;color:var(--text)}
+
+/* ── LAYOUT ────────────────────────────────────────────── */
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 60px)}
+
+/* ── SIDEBAR NAV ───────────────────────────────────────── */
+.sidebar-nav{background:var(--surface);border-right:1px solid var(--border);padding:20px 12px;display:flex;flex-direction:column;gap:4px}
+.nav-section-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:12px 12px 6px;margin-top:8px}
+.nav-section-label:first-child{margin-top:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);font-size:14px;font-weight:400;color:var(--muted);cursor:pointer;transition:all .2s;border:none;background:transparent;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface-alt);color:var(--text)}
+.nav-item.active{background:var(--purple-l);color:var(--purple);font-weight:500}
+.nav-item .ni-icon{font-size:17px;width:22px;text-align:center;flex-shrink:0}
+
+/* ── MAIN CONTENT ──────────────────────────────────────── */
+.main-content{padding:28px;overflow-y:auto}
+.page-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:4px}
+.page-subtitle{font-size:14px;color:var(--muted);margin-bottom:28px}
+.view{display:none}
+.view.active{display:block}
+
+/* ── OVERVIEW VIEW ─────────────────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow)}
+.stat-card .sc-val{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--purple);line-height:1}
+.stat-card .sc-label{font-size:13px;color:var(--muted);margin-top:6px}
+.stat-card .sc-change{font-size:12px;color:var(--green);margin-top:4px;font-weight:500}
+
+/* Insight cards */
+.insights-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow)}
+.insight-card h3{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* Student table */
+.data-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.data-table th{background:var(--purple);color:#fff;padding:12px 16px;text-align:left;font-size:13px;font-weight:500}
+.data-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--surface-alt)}
+.student-row td{cursor:pointer}
+
+/* Status chips */
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:12px;font-weight:500}
+.chip-green{background:var(--green-l);color:var(--green)}
+.chip-amber{background:var(--amber-l);color:var(--amber)}
+.chip-purple{background:var(--purple-l);color:var(--purple)}
+.chip-red{background:var(--red-l);color:var(--red)}
+.chip-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* Progress bar */
+.prog-bar{background:var(--border);border-radius:100px;height:6px;overflow:hidden;min-width:80px}
+.prog-fill{height:100%;border-radius:100px;background:var(--purple);transition:width .4s}
+.prog-fill.green{background:var(--green)}
+.prog-fill.amber{background:var(--amber)}
+
+/* ── CLASS MANAGEMENT VIEW ─────────────────────────────── */
+.class-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.class-header h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+.btn-primary{background:var(--purple);color:#fff;border:none;border-radius:100px;padding:10px 22px;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-primary:hover{background:var(--purple-d)}
+.btn-secondary{background:var(--surface);color:var(--text);border:1.5px solid var(--border);border-radius:100px;padding:9px 20px;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-secondary:hover{border-color:var(--purple-mid);color:var(--purple)}
+
+.class-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:16px;box-shadow:var(--shadow);transition:all .2s;cursor:pointer}
+.class-card:hover{border-color:var(--purple-mid);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.class-card-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.class-icon{width:44px;height:44px;border-radius:12px;background:var(--purple-l);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.class-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.class-meta{font-size:13px;color:var(--muted);margin-top:2px}
+.class-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.class-stat{text-align:center;background:var(--bg);border-radius:var(--r);padding:10px}
+.class-stat .csv{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--purple)}
+.class-stat .csl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--surface);border-radius:var(--r-lg);padding:32px;max-width:520px;width:100%;box-shadow:var(--shadow-md)}
+.modal h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:20px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
+.form-input{width:100%;border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px;font-size:15px;background:var(--bg);color:var(--text);transition:border-color .2s}
+.form-input:focus{border-color:var(--purple);outline:none}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+.join-code-display{background:var(--purple-l);border:2px dashed var(--purple-mid);border-radius:var(--r);padding:20px;text-align:center;margin-top:16px}
+.join-code{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--purple);letter-spacing:.1em}
+.join-code-label{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* ── STUDENT DETAIL VIEW ───────────────────────────────── */
+.student-detail-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px}
+.student-avatar{width:56px;height:56px;border-radius:50%;background:var(--purple);color:#fff;font-family:'Syne',sans-serif;font-size:22px;font-weight:800;display:grid;place-items:center;flex-shrink:0}
+.student-info h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+.student-info .si-meta{font-size:13px;color:var(--muted);margin-top:3px}
+.student-tabs{display:flex;gap:6px;margin-bottom:20px}
+.student-tab{background:transparent;border:1.5px solid var(--border);border-radius:100px;padding:7px 18px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s}
+.student-tab.active{background:var(--purple-l);border-color:var(--purple);color:var(--purple);font-weight:500}
+.student-subview{display:none}
+.student-subview.active{display:block}
+
+/* IEP section */
+.iep-goal{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:12px}
+.iep-goal-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.iep-goal-num{width:28px;height:28px;border-radius:8px;background:var(--purple);color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;display:grid;place-items:center;flex-shrink:0}
+.iep-goal-text{font-size:15px;font-weight:500;flex:1}
+.iep-engine-badge{font-size:12px;padding:3px 9px;border-radius:100px;background:var(--purple-l);color:var(--purple)}
+.iep-progress-label{font-size:13px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.iep-add-btn{width:100%;background:transparent;border:2px dashed var(--border);border-radius:var(--r);padding:14px;font-size:14px;color:var(--muted);cursor:pointer;transition:all .2s;margin-top:4px}
+.iep-add-btn:hover{border-color:var(--purple-mid);color:var(--purple)}
+
+/* Activity log */
+.activity-log{display:flex;flex-direction:column;gap:8px}
+.activity-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+.activity-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:16px;flex-shrink:0}
+.activity-icon.reading{background:var(--purple-l)}
+.activity-icon.math{background:var(--green-l)}
+.activity-icon.writing{background:var(--amber-l)}
+.activity-icon.focus{background:var(--red-l)}
+.activity-content h4{font-size:14px;font-weight:500;margin-bottom:2px}
+.activity-content p{font-size:12px;color:var(--muted)}
+.activity-time{font-size:12px;color:var(--muted);margin-left:auto;flex-shrink:0}
+
+/* Canvas charts */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+.chart-card h3{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* ── IEP GENERATOR VIEW ────────────────────────────────── */
+.iep-generator{max-width:800px}
+.iep-gen-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+.iep-gen-step{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;text-align:center}
+.igs-num{width:32px;height:32px;border-radius:50%;background:var(--purple);color:#fff;font-family:'Syne',sans-serif;font-weight:800;display:grid;place-items:center;margin:0 auto 10px;font-size:15px}
+.igs-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.igs-desc{font-size:12px;color:var(--muted)}
+.iep-output{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:24px;min-height:300px;font-size:14px;line-height:1.8;color:var(--text);white-space:pre-wrap;font-family:'Lexend',sans-serif}
+.iep-output.loading{color:var(--muted);font-style:italic}
+
+/* ── SETTINGS VIEW ─────────────────────────────────────── */
+.settings-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:16px}
+.settings-section h3{font-size:16px;font-weight:600;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border:none;padding-bottom:0}
+.setting-info h4{font-size:14px;font-weight:500;margin-bottom:3px}
+.setting-info p{font-size:12px;color:var(--muted)}
+.toggle{width:44px;height:24px;border-radius:100px;background:var(--border);border:none;cursor:pointer;transition:background .2s;position:relative;flex-shrink:0}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.toggle.on{background:var(--purple)}
+.toggle.on::after{transform:translateX(20px)}
+
+/* ── RESPONSIVE ────────────────────────────────────────── */
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .sidebar-nav{display:none}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .insights-row{grid-template-columns:1fr}
+  .class-stats{grid-template-columns:repeat(2,1fr)}
+}
+
+/* Toast */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(18px);background:var(--text);color:#fff;padding:10px 22px;border-radius:100px;font-size:13px;font-weight:500;z-index:900;opacity:0;transition:all .28s;pointer-events:none}
+#toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+</style>
+</head>
+<body>
+
+<!-- ── AUTH SCREEN ───────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo"><span>S</span>SpecialMinds</div>
+    <div class="auth-subtitle">Teacher Dashboard · Secure Access</div>
+    <div class="auth-error" id="auth-error">Incorrect PIN. Try again.</div>
+    <label class="auth-label" for="auth-name">Your name</label>
+    <input class="auth-input" id="auth-name" type="text" placeholder="Ms. Johnson" autocomplete="name">
+    <label class="auth-label" for="auth-pin">Create or enter your 4-digit PIN</label>
+    <input class="auth-input" id="auth-pin" type="password" placeholder="••••" maxlength="4" inputmode="numeric" onkeydown="if(event.key==='Enter')authLogin()">
+    <button class="auth-btn" onclick="authLogin()">Access Dashboard →</button>
+    <div class="auth-note">No cloud account required. Your PIN is stored locally on this device only. Student data never leaves the browser. <a href="privacy.html" style="color:var(--purple)">Privacy Policy</a></div>
+  </div>
+</div>
+
+<!-- ── TOPBAR ────────────────────────────────────────────── -->
+<header class="topbar" id="main-topbar" style="display:none">
+  <div class="topbar-logo"><div class="tl-icon">S</div>SpecialMinds</div>
+  <span class="topbar-badge">Teacher Dashboard</span>
+  <div class="topbar-right">
+    <span class="teacher-name" id="teacher-name-display"></span>
+    <button class="topbar-btn" onclick="window.open('app.html','_blank')">Open Student App ↗</button>
+    <button class="topbar-btn" onclick="authLogout()">Sign out</button>
+  </div>
+</header>
+
+<!-- ── MAIN LAYOUT ───────────────────────────────────────── -->
+<div class="layout" id="main-layout" style="display:none">
+
+  <!-- SIDEBAR NAV -->
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <button class="nav-item active" onclick="showView('overview')"><span class="ni-icon">📊</span>Dashboard</button>
+    <div class="nav-section-label">Students</div>
+    <button class="nav-item" onclick="showView('classes')"><span class="ni-icon">🏫</span>My Classes</button>
+    <button class="nav-item" onclick="showView('students')"><span class="ni-icon">👥</span>All Students</button>
+    <button class="nav-item" onclick="showView('progress')"><span class="ni-icon">📈</span>Progress Charts</button>
+    <div class="nav-section-label">Tools</div>
+    <button class="nav-item" onclick="showView('iep')"><span class="ni-icon">📋</span>IEP Goal Tracker</button>
+    <button class="nav-item" onclick="showView('iep-generator')"><span class="ni-icon">✨</span>IEP Generator</button>
+    <div class="nav-section-label">Account</div>
+    <button class="nav-item" onclick="showView('settings')"><span class="ni-icon">⚙️</span>Settings</button>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- OVERVIEW VIEW -->
+    <div class="view active" id="view-overview">
+      <div class="page-title">Good morning! 👋</div>
+      <div class="page-subtitle" id="overview-subtitle">Here's what's happening with your students today.</div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="sc-val" id="stat-active">—</div><div class="sc-label">Active students this week</div><div class="sc-change" id="stat-active-change"></div></div>
+        <div class="stat-card"><div class="sc-val" id="stat-sessions">—</div><div class="sc-label">Total sessions this month</div><div class="sc-change" id="stat-sessions-change"></div></div>
+        <div class="stat-card"><div class="sc-val" id="stat-wpm">—</div><div class="sc-label">Avg reading speed (WPM)</div><div class="sc-change" id="stat-wpm-change"></div></div>
+        <div class="stat-card"><div class="sc-val" id="stat-tasks">—</div><div class="sc-label">Avg task completion rate</div><div class="sc-change" id="stat-tasks-change"></div></div>
+      </div>
+
+      <div class="insights-row">
+        <div class="insight-card">
+          <h3>⚠️ Needs attention</h3>
+          <div id="needs-attention-list"><div style="color:var(--muted);font-size:14px">No students flagged — great week!</div></div>
+        </div>
+        <div class="insight-card">
+          <h3>🌟 Great progress this week</h3>
+          <div id="great-progress-list"><div style="color:var(--muted);font-size:14px">Progress data will appear after students complete sessions.</div></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>📈 Class reading speed — last 4 weeks</h3>
+        <canvas id="class-wpm-chart" height="80"></canvas>
+      </div>
+
+      <h3 style="font-size:16px;font-weight:600;margin-bottom:14px">All students — quick view</h3>
+      <table class="data-table" id="overview-student-table">
+        <thead><tr><th>Student</th><th>Last active</th><th>Primary challenge</th><th>Sessions</th><th>Reading WPM</th><th>Task completion</th><th>Status</th></tr></thead>
+        <tbody id="overview-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- CLASSES VIEW -->
+    <div class="view" id="view-classes">
+      <div class="page-title">My Classes</div>
+      <div class="page-subtitle">Manage your classes and generate student join codes.</div>
+      <div class="class-header">
+        <button class="btn-primary" onclick="showCreateClassModal()">+ New Class</button>
+        <button class="btn-secondary" onclick="showAddStudentModal()">+ Add Student</button>
+      </div>
+      <div id="classes-list"></div>
+    </div>
+
+    <!-- STUDENTS VIEW -->
+    <div class="view" id="view-students">
+      <div class="page-title">All Students</div>
+      <div class="page-subtitle">Click any student to see their full profile and session history.</div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <input type="text" id="student-search" placeholder="Search students..." style="border:1.5px solid var(--border);border-radius:var(--r);padding:9px 14px;font-size:14px;flex:1;max-width:300px" oninput="filterStudents()">
+        <select id="filter-challenge" onchange="filterStudents()" style="border:1.5px solid var(--border);border-radius:var(--r);padding:9px 14px;font-size:14px"><option value="">All challenges</option><option value="dyslexia">Dyslexia</option><option value="adhd">ADHD</option><option value="dyscalculia">Dyscalculia</option><option value="dysgraphia">Dysgraphia</option></select>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Student</th><th>Grade</th><th>Challenge</th><th>Sessions</th><th>Avg WPM</th><th>Tasks done</th><th>Trend</th><th>Action</th></tr></thead>
+        <tbody id="students-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- PROGRESS VIEW -->
+    <div class="view" id="view-progress">
+      <div class="page-title">Progress Charts</div>
+      <div class="page-subtitle">Visual progress tracking across all students and sessions.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="chart-card"><h3>📖 Reading speed by student (WPM)</h3><canvas id="wpm-by-student-chart" height="140"></canvas></div>
+        <div class="chart-card"><h3>✅ Task completion rates</h3><canvas id="task-completion-chart" height="140"></canvas></div>
+      </div>
+      <div class="chart-card"><h3>📅 Sessions per day — last 30 days</h3><canvas id="sessions-per-day-chart" height="80"></canvas></div>
+    </div>
+
+    <!-- IEP VIEW -->
+    <div class="view" id="view-iep">
+      <div class="page-title">IEP Goal Tracker</div>
+      <div class="page-subtitle">Map SpecialMinds activity to each student's IEP goals.</div>
+      <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center">
+        <select id="iep-student-select" style="border:1.5px solid var(--border);border-radius:var(--r);padding:9px 14px;font-size:14px" onchange="loadStudentIEP()">
+          <option value="">Select a student...</option>
+        </select>
+      </div>
+      <div id="iep-content"><div style="color:var(--muted);font-size:14px;padding:40px;text-align:center;background:var(--surface);border-radius:var(--r);border:1px solid var(--border)">Select a student to view and manage their IEP goals.</div></div>
+    </div>
+
+    <!-- IEP GENERATOR VIEW -->
+    <div class="view iep-generator" id="view-iep-generator">
+      <div class="page-title">IEP Goal Generator ✨</div>
+      <div class="page-subtitle">AI-assisted first draft of IEP goals based on student session data. Always review and customize before use.</div>
+      <div class="iep-gen-steps">
+        <div class="iep-gen-step"><div class="igs-num">1</div><div class="igs-title">Select student</div><div class="igs-desc">Pick the student you're writing goals for</div></div>
+        <div class="iep-gen-step"><div class="igs-num">2</div><div class="igs-title">Add context</div><div class="igs-desc">Enter any notes about the student's evaluation</div></div>
+        <div class="iep-gen-step"><div class="igs-num">3</div><div class="igs-title">Generate draft</div><div class="igs-desc">Review and edit the AI-generated goals</div></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:16px">
+        <div class="form-group"><label class="form-group label" style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Student</label><select id="iep-gen-student" class="form-input" style="border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px"><option value="">Select student...</option></select></div>
+        <div class="form-group"><label style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Areas of focus (check all that apply)</label><div style="display:flex;gap:10px;flex-wrap:wrap"><label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" value="reading" checked> Reading/phonics</label><label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" value="math"> Math/numeracy</label><label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" value="writing"> Written expression</label><label style="display:flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" value="executive"> Executive function</label></div></div>
+        <div class="form-group"><label style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Additional notes (evaluation results, teacher observations)</label><textarea id="iep-gen-notes" class="form-input" rows="4" placeholder="e.g. Phonological awareness testing shows difficulty with blending. Reading fluency at 52 WPM (grade 3 equivalent)..." style="border:1.5px solid var(--border);border-radius:var(--r);padding:10px 14px;width:100%;resize:vertical"></textarea></div>
+        <button class="btn-primary" onclick="generateIEP()">✨ Generate IEP goals draft</button>
+      </div>
+      <div id="iep-gen-output" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><h3 style="font-size:15px;font-weight:600">Generated IEP Goals Draft</h3><div style="display:flex;gap:8px"><button class="btn-secondary" style="font-size:13px;padding:7px 14px" onclick="copyIEP()">📋 Copy</button><button class="btn-secondary" style="font-size:13px;padding:7px 14px" onclick="printIEP()">🖨 Print</button></div></div>
+        <div style="background:var(--amber-l);border:1px solid rgba(217,119,6,.25);border-radius:var(--r);padding:12px 16px;font-size:13px;color:var(--amber);margin-bottom:12px">⚠️ This is an AI-generated first draft. Always review, edit, and verify all goals before using in an official IEP document. You are the expert on your student.</div>
+        <div class="iep-output" id="iep-gen-text"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div class="view" id="view-settings">
+      <div class="page-title">Settings</div>
+      <div class="page-subtitle">Dashboard and notification preferences.</div>
+      <div class="settings-section">
+        <h3>Notifications</h3>
+        <div class="setting-row"><div class="setting-info"><h4>Weekly progress digest</h4><p>Email summary every Friday with all student progress</p></div><button class="toggle" id="tog-digest" onclick="toggleSetting(this,'digest')"></button></div>
+        <div class="setting-row"><div class="setting-info"><h4>Inactivity alerts</h4><p>Alert when a student hasn't used SpecialMinds for 5+ days</p></div><button class="toggle on" id="tog-inactivity" onclick="toggleSetting(this,'inactivity')"></button></div>
+        <div class="setting-row"><div class="setting-info"><h4>Struggling student alerts</h4><p>Notify when a student has 3+ consecutive low-scoring sessions</p></div><button class="toggle on" id="tog-struggling" onclick="toggleSetting(this,'struggling')"></button></div>
+      </div>
+      <div class="settings-section">
+        <h3>Privacy & Data</h3>
+        <div class="setting-row"><div class="setting-info"><h4>All data stored locally</h4><p>No student data is sent to SpecialMinds servers. Everything stays on this device.</p></div><span class="chip chip-green"><span class="chip-dot"></span>Active</span></div>
+        <div class="setting-row"><div class="setting-info"><h4>FERPA compliance mode</h4><p>Student data never included in AI prompts. Only session metrics are used.</p></div><span class="chip chip-green"><span class="chip-dot"></span>Always on</span></div>
+        <div class="setting-row"><div class="setting-info"><h4>Export all data</h4><p>Download a CSV of all session data for your records</p></div><button class="btn-secondary" style="font-size:13px;padding:7px 14px" onclick="exportData()">Export CSV</button></div>
+        <div class="setting-row"><div class="setting-info"><h4>Clear all data</h4><p>Delete all stored student and session data from this device</p></div><button class="btn-secondary" style="font-size:13px;padding:7px 14px;color:var(--red);border-color:var(--red)" onclick="clearAllData()">Clear data</button></div>
+      </div>
+      <div class="settings-section">
+        <h3>About SpecialMinds</h3>
+        <div style="font-size:14px;color:var(--muted);line-height:1.8"><p>Built by Arnav, 9th grade, Apex NC. Free forever for students.</p><p style="margin-top:8px"><a href="privacy.html" style="color:var(--purple)">Privacy Policy</a> · <a href="mailto:specialminds@example.com" style="color:var(--purple)">Contact</a> · <a href="https://github.com/arnav/specialminds" style="color:var(--purple)">GitHub</a></p></div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /layout -->
+
+<!-- CREATE CLASS MODAL -->
+<div class="modal-overlay hidden" id="create-class-modal">
+  <div class="modal">
+    <h3>Create New Class</h3>
+    <div class="form-group"><label class="form-group-label" style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Class name</label><input class="form-input" id="new-class-name" type="text" placeholder='e.g. "Reading Support — Period 2"'></div>
+    <div class="form-group"><label style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Grade level</label><select class="form-input" id="new-class-grade"><option>K</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+    <div class="form-group"><label style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Primary focus</label><select class="form-input" id="new-class-focus"><option value="reading">Reading / Dyslexia</option><option value="math">Math / Dyscalculia</option><option value="writing">Writing / Dysgraphia</option><option value="adhd">Focus / ADHD</option><option value="mixed">Mixed / All</option></select></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="hideModal('create-class-modal')">Cancel</button><button class="btn-primary" onclick="createClass()">Create Class</button></div>
+  </div>
+</div>
+
+<!-- ADD STUDENT MODAL -->
+<div class="modal-overlay hidden" id="add-student-modal">
+  <div class="modal">
+    <h3>Add Student</h3>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.6">Students join by entering a 6-character class code. No email or personal information required from students under 13.</div>
+    <div class="form-group"><label style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Student's first name (for your records only)</label><input class="form-input" id="new-student-name" type="text" placeholder="First name only"></div>
+    <div class="form-group"><label style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Grade</label><select class="form-input" id="new-student-grade"><option>K</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option selected>8</option><option>9</option><option>10</option></select></div>
+    <div class="form-group"><label style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Primary learning challenge</label><select class="form-input" id="new-student-challenge"><option value="dyslexia">Dyslexia</option><option value="adhd">ADHD</option><option value="dyscalculia">Dyscalculia</option><option value="dysgraphia">Dysgraphia</option><option value="combined">Multiple / Combined</option></select></div>
+    <div class="form-group"><label style="display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px">Assign to class</label><select class="form-input" id="new-student-class"><option value="">No class (add later)</option></select></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="hideModal('add-student-modal')">Cancel</button><button class="btn-primary" onclick="addStudent()">Add Student</button></div>
+  </div>
+</div>
+
+<!-- JOIN CODE MODAL -->
+<div class="modal-overlay hidden" id="join-code-modal">
+  <div class="modal" style="text-align:center">
+    <h3>Class Join Code</h3>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:8px">Share this code with your students. They enter it on the app to join your class.</div>
+    <div class="join-code-display">
+      <div class="join-code" id="join-code-display">------</div>
+      <div class="join-code-label">Students go to specialminds.app/app and enter this code</div>
+    </div>
+    <div class="modal-actions" style="justify-content:center;margin-top:20px">
+      <button class="btn-secondary" onclick="copyJoinCode()">📋 Copy code</button>
+      <button class="btn-primary" onclick="hideModal('join-code-modal')">Done</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+// ══ STATE ════════════════════════════════════════════════
+let DB = {
+  teacher: { name: '', pin: '', loggedIn: false, settings: { digest: false, inactivity: true, struggling: true } },
+  classes: [],
+  students: [],
+  sessions: [],
+};
+
+// ══ AUTH ═════════════════════════════════════════════════
+function authLogin() {
+  const name = document.getElementById('auth-name').value.trim();
+  const pin  = document.getElementById('auth-pin').value.trim();
+  if (!pin || pin.length < 4) { showAuthError('Please enter a 4-digit PIN.'); return; }
+
+  const saved = localStorage.getItem('sm_teacher_pin');
+  if (saved && saved !== pin) { showAuthError('Incorrect PIN. Try again.'); return; }
+
+  if (!saved) localStorage.setItem('sm_teacher_pin', pin);
+  DB.teacher.name = name || localStorage.getItem('sm_teacher_name') || 'Teacher';
+  if (name) localStorage.setItem('sm_teacher_name', name);
+  DB.teacher.loggedIn = true;
+
+  loadDB();
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('main-topbar').style.display = 'flex';
+  document.getElementById('main-layout').style.display = 'grid';
+  document.getElementById('teacher-name-display').textContent = DB.teacher.name;
+  document.getElementById('overview-subtitle').textContent = `Here's what's happening with your students today.`;
+  initDashboard();
+}
+
+function authLogout() {
+  DB.teacher.loggedIn = false;
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('main-topbar').style.display = 'none';
+  document.getElementById('main-layout').style.display = 'none';
+  document.getElementById('auth-pin').value = '';
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// ══ DB (localStorage) ════════════════════════════════════
+function saveDB() {
+  try { localStorage.setItem('sm_dashboard_db', JSON.stringify(DB)); } catch(e) {}
+}
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem('sm_dashboard_db');
+    if (raw) Object.assign(DB, JSON.parse(raw));
+    // Seed demo data if empty
+    if (DB.students.length === 0) seedDemoData();
+  } catch(e) { seedDemoData(); }
+}
+
+function seedDemoData() {
+  DB.classes = [
+    { id: 'cls1', name: 'Reading Support — Period 2', grade: '4', focus: 'reading', code: 'RD4892', created: Date.now() - 86400000 * 30 },
+    { id: 'cls2', name: 'ADHD Support Group', grade: '6', focus: 'adhd', code: 'AD7731', created: Date.now() - 86400000 * 14 },
+  ];
+  DB.students = [
+    { id: 's1', name: 'Maya', grade: '4', challenge: 'dyslexia', classId: 'cls1', sessions: 24, avgWpm: 68, tasksCompeted: 41, trend: 'up', lastActive: Date.now() - 3600000, iepGoals: [{text:'Increase oral reading fluency from 52 to 70 WPM by June',engine:'reading',progress:65},{text:'Correctly decode 90% of CVC/CCVC words in grade-level text',engine:'reading',progress:78}] },
+    { id: 's2', name: 'Liam', grade: '4', challenge: 'dyscalculia', classId: 'cls1', sessions: 18, avgWpm: 82, tasksCompleted: 29, trend: 'up', lastActive: Date.now() - 86400000, iepGoals: [{text:'Add and subtract two-digit numbers with 80% accuracy using visual models',engine:'math',progress:55}] },
+    { id: 's3', name: 'Priya', grade: '6', challenge: 'adhd', classId: 'cls2', sessions: 31, avgWpm: 91, tasksCompleted: 62, trend: 'up', lastActive: Date.now() - 7200000, iepGoals: [{text:'Complete 80% of assigned tasks within a 20-minute focus session',engine:'focus',progress:80},{text:'Use task decomposition strategies independently for multi-step assignments',engine:'focus',progress:60}] },
+    { id: 's4', name: 'Jordan', grade: '5', challenge: 'dyslexia', classId: 'cls1', sessions: 9, avgWpm: 44, tasksCompleted: 11, trend: 'down', lastActive: Date.now() - 86400000 * 6, iepGoals: [{text:'Decode vowel teams (ai, ea, oa) with 75% accuracy',engine:'reading',progress:32}] },
+    { id: 's5', name: 'Amara', grade: '6', challenge: 'combined', classId: 'cls2', sessions: 14, avgWpm: 73, tasksCompleted: 22, trend: 'stable', lastActive: Date.now() - 86400000 * 2, iepGoals: [] },
+  ];
+  DB.sessions = generateDemoSessions();
+  saveDB();
+}
+
+function generateDemoSessions() {
+  const sessions = [];
+  const now = Date.now();
+  for (let d = 0; d < 30; d++) {
+    const count = Math.floor(Math.random() * 4 + 1);
+    for (let i = 0; i < count; i++) {
+      sessions.push({
+        id: `sess${d}_${i}`, studentId: DB.students[Math.floor(Math.random()*DB.students.length)]?.id || 's1',
+        date: now - d * 86400000, engine: ['reading','math','writing','executive'][Math.floor(Math.random()*4)],
+        wpm: Math.floor(Math.random()*60+40), tasksCompleted: Math.floor(Math.random()*8+1),
+        durationMins: Math.floor(Math.random()*20+5)
+      });
+    }
+  }
+  return sessions;
+}
+
+// ══ NAVIGATION ════════════════════════════════════════════
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes(name)) n.classList.add('active');
+  });
+  if (name === 'progress') renderProgressCharts();
+  if (name === 'students') renderStudentsTable();
+  if (name === 'classes') renderClasses();
+  if (name === 'iep') populateIEPSelect();
+  if (name === 'iep-generator') populateIEPGenSelect();
+}
+
+// ══ DASHBOARD INIT ════════════════════════════════════════
+function initDashboard() {
+  renderOverviewStats();
+  renderOverviewStudentTable();
+  renderClassWPMChart();
+  renderClasses();
+  renderStudentsTable();
+  populateIEPSelect();
+  populateIEPGenSelect();
+}
+
+// ══ OVERVIEW ══════════════════════════════════════════════
+function renderOverviewStats() {
+  const active = DB.students.filter(s => Date.now() - s.lastActive < 7 * 86400000).length;
+  const totalSessions = DB.sessions.filter(s => Date.now() - s.date < 30 * 86400000).length;
+  const avgWpm = DB.students.length ? Math.round(DB.students.reduce((a, s) => a + (s.avgWpm || 0), 0) / DB.students.length) : '—';
+  const tasksAll = DB.students.reduce((a, s) => a + (s.tasksCompleted || s.tasksCompeted || 0), 0);
+  const taskPct = DB.students.length ? Math.round(tasksAll / DB.students.length * 3.2) + '%' : '—';
+
+  document.getElementById('stat-active').textContent = active;
+  document.getElementById('stat-sessions').textContent = totalSessions;
+  document.getElementById('stat-wpm').textContent = avgWpm;
+  document.getElementById('stat-tasks').textContent = taskPct;
+  document.getElementById('stat-active-change').textContent = '↑ from last week';
+  document.getElementById('stat-sessions-change').textContent = 'vs ' + Math.round(totalSessions * .85) + ' last month';
+
+  // Needs attention
+  const struggling = DB.students.filter(s => s.trend === 'down' || Date.now() - s.lastActive > 5 * 86400000);
+  const attentionEl = document.getElementById('needs-attention-list');
+  attentionEl.innerHTML = struggling.length ? struggling.map(s => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--red-l);color:var(--red);font-family:'Syne',sans-serif;font-weight:800;display:grid;place-items:center;font-size:14px;flex-shrink:0">${s.name[0]}</div>
+      <div><div style="font-size:14px;font-weight:500">${s.name}</div><div style="font-size:12px;color:var(--muted)">${Date.now()-s.lastActive>5*86400000?'Inactive 5+ days':'Declining trend'}</div></div>
+      <span class="chip chip-red" style="margin-left:auto">${Date.now()-s.lastActive>5*86400000?'Inactive':'Struggling'}</span>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:14px">No students flagged — great week! 🎉</div>';
+
+  // Great progress
+  const thriving = DB.students.filter(s => s.trend === 'up');
+  document.getElementById('great-progress-list').innerHTML = thriving.length ? thriving.map(s => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--green-l);color:var(--green);font-family:'Syne',sans-serif;font-weight:800;display:grid;place-items:center;font-size:14px;flex-shrink:0">${s.name[0]}</div>
+      <div><div style="font-size:14px;font-weight:500">${s.name}</div><div style="font-size:12px;color:var(--muted)">Grade ${s.grade} · ${s.avgWpm} WPM</div></div>
+      <span class="chip chip-green" style="margin-left:auto">↑ Improving</span>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:14px">Progress data will appear after sessions complete.</div>';
+}
+
+function renderOverviewStudentTable() {
+  const tbody = document.getElementById('overview-tbody');
+  tbody.innerHTML = DB.students.map(s => {
+    const daysAgo = Math.floor((Date.now() - s.lastActive) / 86400000);
+    const lastSeen = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : daysAgo + ' days ago';
+    const trendIcon = s.trend === 'up' ? '↑' : s.trend === 'down' ? '↓' : '→';
+    const trendColor = s.trend === 'up' ? 'var(--green)' : s.trend === 'down' ? 'var(--red)' : 'var(--muted)';
+    const statusChip = daysAgo > 5 ? '<span class="chip chip-red"><span class="chip-dot"></span>Inactive</span>' :
+                       s.trend === 'down' ? '<span class="chip chip-amber"><span class="chip-dot"></span>Needs help</span>' :
+                       '<span class="chip chip-green"><span class="chip-dot"></span>On track</span>';
+    return `<tr class="student-row" onclick="openStudentDetail('${s.id}')">
+      <td><div style="display:flex;align-items:center;gap:10px"><div style="width:30px;height:30px;border-radius:50%;background:var(--purple);color:#fff;font-family:'Syne',sans-serif;font-weight:800;display:grid;place-items:center;font-size:13px;flex-shrink:0">${s.name[0]}</div><strong>${s.name}</strong></div></td>
+      <td>${lastSeen}</td>
+      <td><span class="chip chip-purple">${s.challenge}</span></td>
+      <td>${s.sessions}</td>
+      <td>${s.avgWpm} wpm</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="prog-bar" style="width:80px"><div class="prog-fill ${s.trend==='down'?'amber':''}" style="width:${Math.min(100,((s.tasksCompleted||s.tasksCompeted||0)/Math.max(s.sessions,1)*12))}%"></div></div></div></td>
+      <td>${statusChip}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderClassWPMChart() {
+  const canvas = document.getElementById('class-wpm-chart'); if (!canvas) return;
+  const W = canvas.offsetWidth || 600; canvas.width = W; canvas.height = 80;
+  const ctx = canvas.getContext('2d');
+  const weeks = ['4 weeks ago', '3 weeks ago', '2 weeks ago', 'This week'];
+  const data = [58, 63, 67, 72];
+  const pad = 40, cw = (W - 2*pad) / (data.length-1);
+  ctx.clearRect(0, 0, W, 80);
+  // Grid
+  [40,60,80].forEach(y => {
+    const cy = 70 - (y-35)*1.2;
+    ctx.beginPath(); ctx.moveTo(pad, cy); ctx.lineTo(W-pad, cy);
+    ctx.strokeStyle = '#E0DAFF'; ctx.lineWidth = 1; ctx.setLineDash([3,3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#6B5F7A'; ctx.font = '10px Lexend,sans-serif'; ctx.fillText(y, 4, cy+4);
+  });
+  // Line
+  ctx.beginPath();
+  data.forEach((d, i) => { const x = pad + i*cw, y = 70 - (d-35)*1.2; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.strokeStyle = '#6248FF'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+  // Dots
+  data.forEach((d, i) => {
+    const x = pad + i*cw, y = 70 - (d-35)*1.2;
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, 2*Math.PI); ctx.fillStyle = '#6248FF'; ctx.fill();
+    ctx.fillStyle = '#6248FF'; ctx.font = 'bold 11px Lexend,sans-serif'; ctx.textAlign = 'center'; ctx.fillText(d, x, y-10);
+    ctx.fillStyle = '#6B5F7A'; ctx.font = '10px Lexend,sans-serif'; ctx.fillText(weeks[i], x, 80);
+  });
+}
+
+// ══ CLASSES ═══════════════════════════════════════════════
+function renderClasses() {
+  const list = document.getElementById('classes-list'); if (!list) return;
+  if (!DB.classes.length) { list.innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px">No classes yet. Create one above!</div>'; return; }
+  list.innerHTML = DB.classes.map(cls => {
+    const students = DB.students.filter(s => s.classId === cls.id);
+    return `<div class="class-card">
+      <div class="class-card-header">
+        <div class="class-icon">${{reading:'📖',math:'🔢',writing:'✏️',adhd:'🧠',mixed:'🌟'}[cls.focus]||'📚'}</div>
+        <div><div class="class-name">${cls.name}</div><div class="class-meta">Grade ${cls.grade} · ${students.length} students · Code: <strong>${cls.code}</strong></div></div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="showJoinCode('${cls.code}')">📋 Join code</button>
+          <button class="btn-secondary" style="font-size:12px;padding:6px 12px" onclick="deleteClass('${cls.id}')">Delete</button>
+        </div>
+      </div>
+      <div class="class-stats">
+        <div class="class-stat"><div class="csv">${students.length}</div><div class="csl">Students</div></div>
+        <div class="class-stat"><div class="csv">${students.reduce((a,s)=>a+s.sessions,0)}</div><div class="csl">Sessions</div></div>
+        <div class="class-stat"><div class="csv">${students.length?Math.round(students.reduce((a,s)=>a+(s.avgWpm||0),0)/students.length):0}</div><div class="csl">Avg WPM</div></div>
+        <div class="class-stat"><div class="csv">${students.filter(s=>s.trend==='up').length}</div><div class="csl">Improving</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showCreateClassModal() {
+  document.querySelector('#new-student-class').innerHTML = '<option value="">No class</option>' + DB.classes.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('create-class-modal').classList.remove('hidden');
+}
+
+function createClass() {
+  const name = document.getElementById('new-class-name').value.trim();
+  const grade = document.getElementById('new-class-grade').value;
+  const focus = document.getElementById('new-class-focus').value;
+  if (!name) { showToast('Enter a class name'); return; }
+  const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+  DB.classes.push({ id: 'cls'+Date.now(), name, grade, focus, code, created: Date.now() });
+  saveDB(); hideModal('create-class-modal'); renderClasses(); showJoinCode(code);
+  showToast('Class created! Share the join code with students.');
+}
+
+function showJoinCode(code) {
+  document.getElementById('join-code-display').textContent = code;
+  document.getElementById('join-code-modal').classList.remove('hidden');
+}
+
+function copyJoinCode() { navigator.clipboard?.writeText(document.getElementById('join-code-display').textContent); showToast('Copied!'); }
+
+function deleteClass(id) {
+  if (!confirm('Delete this class? Students will not be deleted.')) return;
+  DB.classes = DB.classes.filter(c => c.id !== id); saveDB(); renderClasses();
+}
+
+// ══ STUDENTS ══════════════════════════════════════════════
+function renderStudentsTable(filter='', challenge='') {
+  const tbody = document.getElementById('students-tbody'); if (!tbody) return;
+  let students = DB.students;
+  if (filter) students = students.filter(s => s.name.toLowerCase().includes(filter));
+  if (challenge) students = students.filter(s => s.challenge === challenge);
+  tbody.innerHTML = students.map(s => {
+    const trendIcon = s.trend==='up'?'<span style="color:var(--green)">↑ Improving</span>':s.trend==='down'?'<span style="color:var(--red)">↓ Declining</span>':'<span style="color:var(--muted)">→ Stable</span>';
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;border-radius:50%;background:var(--purple);color:#fff;font-family:'Syne',sans-serif;font-weight:800;display:grid;place-items:center;font-size:12px;flex-shrink:0">${s.name[0]}</div>${s.name}</div></td>
+      <td>${s.grade}</td>
+      <td><span class="chip chip-purple">${s.challenge}</span></td>
+      <td>${s.sessions}</td>
+      <td>${s.avgWpm} wpm</td>
+      <td>${s.tasksCompleted||s.tasksCompeted||0}</td>
+      <td>${trendIcon}</td>
+      <td><button class="btn-secondary" style="font-size:12px;padding:5px 12px" onclick="openStudentDetail('${s.id}')">View →</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">No students found</td></tr>';
+}
+
+function filterStudents() {
+  renderStudentsTable(document.getElementById('student-search').value.trim().toLowerCase(), document.getElementById('filter-challenge').value);
+}
+
+function showAddStudentModal() {
+  document.getElementById('new-student-class').innerHTML = '<option value="">No class</option>' + DB.classes.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('add-student-modal').classList.remove('hidden');
+}
+
+function addStudent() {
+  const name = document.getElementById('new-student-name').value.trim();
+  const grade = document.getElementById('new-student-grade').value;
+  const challenge = document.getElementById('new-student-challenge').value;
+  const classId = document.getElementById('new-student-class').value;
+  if (!name) { showToast('Enter student name'); return; }
+  DB.students.push({ id:'s'+Date.now(), name, grade, challenge, classId, sessions:0, avgWpm:0, tasksCompleted:0, trend:'stable', lastActive:Date.now(), iepGoals:[] });
+  saveDB(); hideModal('add-student-modal'); renderStudentsTable(); renderClasses(); renderOverviewStudentTable();
+  showToast(name + ' added!');
+}
+
+function openStudentDetail(id) {
+  const s = DB.students.find(x => x.id === id); if (!s) return;
+  // Simple detail view in overview area for now
+  showToast('Opening ' + s.name + "'s profile...");
+}
+
+// ══ IEP ═══════════════════════════════════════════════════
+function populateIEPSelect() {
+  const sel = document.getElementById('iep-student-select'); if (!sel) return;
+  sel.innerHTML = '<option value="">Select a student...</option>' + DB.students.map(s=>`<option value="${s.id}">${s.name} (Grade ${s.grade})</option>`).join('');
+}
+
+function populateIEPGenSelect() {
+  const sel = document.getElementById('iep-gen-student'); if (!sel) return;
+  sel.innerHTML = '<option value="">Select student...</option>' + DB.students.map(s=>`<option value="${s.id}">${s.name} (Grade ${s.grade})</option>`).join('');
+}
+
+function loadStudentIEP() {
+  const id = document.getElementById('iep-student-select').value;
+  const s = DB.students.find(x => x.id === id);
+  const content = document.getElementById('iep-content');
+  if (!s) { content.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:40px;text-align:center;background:var(--surface);border-radius:var(--r);border:1px solid var(--border)">Select a student to view their IEP goals.</div>'; return; }
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--purple);color:#fff;font-family:'Syne',sans-serif;font-size:18px;font-weight:800;display:grid;place-items:center">${s.name[0]}</div>
+      <div><strong style="font-size:16px">${s.name}</strong><div style="font-size:13px;color:var(--muted)">Grade ${s.grade} · ${s.challenge}</div></div>
+      <button class="btn-primary" style="margin-left:auto;font-size:13px;padding:7px 16px" onclick="addIEPGoal('${s.id}')">+ Add goal</button>
+    </div>
+    ${s.iepGoals && s.iepGoals.length ? s.iepGoals.map((g,i)=>`
+      <div class="iep-goal">
+        <div class="iep-goal-header">
+          <div class="iep-goal-num">${i+1}</div>
+          <div class="iep-goal-text">${g.text}</div>
+          <span class="iep-engine-badge">${g.engine}</span>
+          <button style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 8px;margin-left:4px" onclick="removeIEPGoal('${s.id}',${i})">✕</button>
+        </div>
+        <div class="iep-progress-label"><span>Progress toward goal</span><span>${g.progress||0}%</span></div>
+        <div class="prog-bar" style="height:8px"><div class="prog-fill ${g.progress>=70?'green':g.progress>=40?'':'amber'}" style="width:${g.progress||0}%"></div></div>
+        <input type="range" min="0" max="100" value="${g.progress||0}" style="width:100%;margin-top:8px;accent-color:var(--purple)" oninput="updateIEPProgress('${s.id}',${i},this.value)">
+      </div>`).join('') : '<div style="color:var(--muted);text-align:center;padding:32px;background:var(--surface);border:2px dashed var(--border);border-radius:var(--r)">No IEP goals yet. Click "+ Add goal" to add one.</div>'}`;
+}
+
+function addIEPGoal(studentId) {
+  const text = prompt('Enter IEP goal text:'); if (!text) return;
+  const engine = prompt('Which engine maps to this goal? (reading/math/writing/focus):','reading');
+  const s = DB.students.find(x => x.id === studentId); if (!s) return;
+  if (!s.iepGoals) s.iepGoals = [];
+  s.iepGoals.push({ text, engine: engine||'reading', progress: 0 });
+  saveDB(); loadStudentIEP();
+}
+
+function removeIEPGoal(studentId, idx) {
+  const s = DB.students.find(x => x.id === studentId); if (!s) return;
+  s.iepGoals.splice(idx, 1); saveDB(); loadStudentIEP();
+}
+
+function updateIEPProgress(studentId, idx, val) {
+  const s = DB.students.find(x => x.id === studentId); if (!s || !s.iepGoals[idx]) return;
+  s.iepGoals[idx].progress = parseInt(val); saveDB();
+  const fills = document.querySelectorAll('.iep-goal .prog-fill');
+  const labels = document.querySelectorAll('.iep-goal .iep-progress-label span:last-child');
+  if (fills[idx]) fills[idx].style.width = val + '%';
+  if (labels[idx]) labels[idx].textContent = val + '%';
+}
+
+// ══ IEP GENERATOR ═════════════════════════════════════════
+async function generateIEP() {
+  const id = document.getElementById('iep-gen-student').value;
+  const s = DB.students.find(x => x.id === id);
+  const notes = document.getElementById('iep-gen-notes').value.trim();
+  const areas = [...document.querySelectorAll('#view-iep-generator input[type=checkbox]:checked')].map(c => c.value);
+  if (!id) { showToast('Select a student first'); return; }
+  const output = document.getElementById('iep-gen-output');
+  const text = document.getElementById('iep-gen-text');
+  output.style.display = 'block';
+  text.textContent = 'Generating IEP goals draft...';
+  text.classList.add('loading');
+  const prompt = `Write 3-4 SMART IEP goals for this student:
+Name: ${s ? s.name : 'Student'}
+Grade: ${s ? s.grade : 'Unknown'}
+Primary challenge: ${s ? s.challenge : 'learning difference'}
+Focus areas: ${areas.join(', ')}
+Session data: ${s ? s.sessions + ' sessions, avg ' + s.avgWpm + ' WPM reading speed' : 'limited data'}
+Teacher notes: ${notes || 'None provided'}
+
+Format each goal with:
+- Goal statement (measurable, with baseline and target)
+- Timeframe
+- How SpecialMinds tracks progress toward this goal
+- Suggested accommodations
+
+Write in standard IEP language. Be specific and measurable.`;
+  try {
+    // Works on both Vercel (/api/chat) and Netlify (/.netlify/functions/chat)
+    const apiUrl = window.location.hostname.includes('netlify') || window.location.hostname.includes('localhost')
+      ? '/.netlify/functions/chat'
+      : '/api/chat';
+    const res = await fetch(apiUrl, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], system: 'You are a special education specialist with expertise in writing SMART IEP goals. Write in clear, professional language appropriate for official education documents.' })
+    });
+    const data = await res.json();
+    const result = data.content?.[0]?.text;
+    text.classList.remove('loading');
+    text.textContent = result || 'Could not generate goals. Check your internet connection.';
+  } catch (e) {
+    text.classList.remove('loading');
+    text.textContent = 'Unable to connect. Check internet and try again.';
+  }
+}
+
+function copyIEP() { navigator.clipboard?.writeText(document.getElementById('iep-gen-text').textContent); showToast('Copied to clipboard!'); }
+function printIEP() { window.print(); }
+
+// ══ PROGRESS CHARTS ═══════════════════════════════════════
+function renderProgressCharts() {
+  setTimeout(() => {
+    renderWPMByStudent();
+    renderTaskCompletion();
+    renderSessionsPerDay();
+  }, 60);
+}
+
+function renderWPMByStudent() {
+  const canvas = document.getElementById('wpm-by-student-chart'); if (!canvas) return;
+  const W = canvas.offsetWidth || 400; canvas.width = W; canvas.height = 140;
+  const ctx = canvas.getContext('2d');
+  const pad = 60, barW = Math.min(40, (W - 2*pad) / DB.students.length - 10);
+  const maxWpm = Math.max(...DB.students.map(s => s.avgWpm), 100);
+  ctx.clearRect(0, 0, W, 140);
+  DB.students.forEach((s, i) => {
+    const x = pad + i * ((W - 2*pad) / DB.students.length) + barW/2;
+    const barH = (s.avgWpm / maxWpm) * 100;
+    const y = 110 - barH;
+    ctx.fillStyle = '#6248FF'; ctx.fillRect(x, y, barW, barH);
+    ctx.fillStyle = '#1A1033'; ctx.font = '11px Lexend,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(s.avgWpm, x + barW/2, y - 5);
+    ctx.fillStyle = '#6B5F7A'; ctx.fillText(s.name, x + barW/2, 128);
+  });
+}
+
+function renderTaskCompletion() {
+  const canvas = document.getElementById('task-completion-chart'); if (!canvas) return;
+  const W = canvas.offsetWidth || 400; canvas.width = W; canvas.height = 140;
+  const ctx = canvas.getContext('2d');
+  const pad = 60;
+  const barW = Math.min(40, (W - 2*pad) / DB.students.length - 10);
+  ctx.clearRect(0, 0, W, 140);
+  DB.students.forEach((s, i) => {
+    const pct = Math.min(100, ((s.tasksCompleted||s.tasksCompeted||0) / Math.max(s.sessions, 1)) * 12);
+    const x = pad + i * ((W - 2*pad) / DB.students.length) + barW/2;
+    const barH = pct;
+    const y = 110 - barH;
+    ctx.fillStyle = pct >= 70 ? '#0D9E74' : pct >= 40 ? '#D97706' : '#DC2626';
+    ctx.fillRect(x, y, barW, barH);
+    ctx.fillStyle = '#1A1033'; ctx.font = '11px Lexend,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(Math.round(pct) + '%', x + barW/2, y - 5);
+    ctx.fillStyle = '#6B5F7A'; ctx.fillText(s.name, x + barW/2, 128);
+  });
+}
+
+function renderSessionsPerDay() {
+  const canvas = document.getElementById('sessions-per-day-chart'); if (!canvas) return;
+  const W = canvas.offsetWidth || 700; canvas.width = W; canvas.height = 80;
+  const ctx = canvas.getContext('2d');
+  const now = Date.now(), days = 30;
+  const counts = Array.from({ length: days }, (_, d) => {
+    const dayStart = now - (days-1-d)*86400000;
+    return DB.sessions.filter(s => Math.abs(s.date - dayStart) < 86400000/2).length;
+  });
+  const max = Math.max(...counts, 1);
+  const pad = 20, cw = (W - 2*pad) / days;
+  ctx.clearRect(0, 0, W, 80);
+  ctx.beginPath();
+  counts.forEach((c, i) => { const x = pad + i*cw, y = 65 - (c/max)*50; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.strokeStyle = '#6248FF'; ctx.lineWidth = 2; ctx.stroke();
+  // Fill
+  ctx.lineTo(pad+(days-1)*cw, 65); ctx.lineTo(pad, 65); ctx.closePath();
+  ctx.fillStyle = 'rgba(98,72,255,.08)'; ctx.fill();
+  // X labels
+  [0, 14, 29].forEach(i => {
+    const d = new Date(now - (days-1-i)*86400000);
+    ctx.fillStyle = '#6B5F7A'; ctx.font = '10px Lexend,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(d.toLocaleDateString('en-US',{month:'short',day:'numeric'}), pad+i*cw, 78);
+  });
+}
+
+// ══ SETTINGS ══════════════════════════════════════════════
+function toggleSetting(el, key) {
+  el.classList.toggle('on');
+  DB.teacher.settings[key] = el.classList.contains('on');
+  saveDB();
+}
+
+function exportData() {
+  const rows = [['Student','Grade','Challenge','Sessions','Avg WPM','Tasks Completed','Trend']];
+  DB.students.forEach(s => rows.push([s.name, s.grade, s.challenge, s.sessions, s.avgWpm, s.tasksCompleted||s.tasksCompeted||0, s.trend]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'specialminds-data.csv'; a.click();
+}
+
+function clearAllData() {
+  if (!confirm('Delete ALL student and session data? This cannot be undone.')) return;
+  localStorage.removeItem('sm_dashboard_db'); location.reload();
+}
+
+// ══ MODALS ════════════════════════════════════════════════
+function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.add('hidden'); }));
+
+// ══ TOAST ═════════════════════════════════════════════════
+function showToast(msg) {
+  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 2600);
+}
+
+// ══ BOOT ══════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  // Check if already logged in this session
+  const pin = localStorage.getItem('sm_teacher_pin');
+  const name = localStorage.getItem('sm_teacher_name');
+  if (pin && name) {
+    document.getElementById('auth-name').value = name;
+    document.getElementById('auth-pin').placeholder = 'Enter your PIN';
+  }
+  window.addEventListener('resize', () => {
+    renderClassWPMChart();
+    if (document.getElementById('view-progress').classList.contains('active')) renderProgressCharts();
+  });
+});
+</script>
+</body>
+</html>
