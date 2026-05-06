@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpecialMinds — The AI Tutor Built for How Your Brain Works</title>
+<meta name="description" content="Free AI tutoring for students with dyslexia, ADHD, dyscalculia, and dysgraphia. No account. No download. Works on any device.">
+<meta name="theme-color" content="#6248FF">
+<meta property="og:title" content="SpecialMinds — The AI Tutor Built for How Your Brain Works">
+<meta property="og:description" content="Free AI tutoring for students with dyslexia, ADHD, dyscalculia, and dysgraphia. No account. No download.">
+<meta property="og:type" content="website">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Lexend:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FDF8F0;--surface:#fff;--surface-alt:#F7F3FF;
+  --purple:#6248FF;--purple-d:#4A34E0;--purple-l:#EDE9FF;--purple-mid:#C4B5FF;
+  --green:#0D9E74;--green-l:#E0F5EE;
+  --amber:#D97706;--amber-l:#FEF3C7;
+  --text:#1A1033;--muted:#6B5F7A;--border:#E8E1FF;
+  --r:14px;--r-lg:24px;--r-sm:8px;
+  --shadow:0 2px 16px rgba(98,72,255,.08);--shadow-md:0 6px 32px rgba(98,72,255,.13);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Lexend',sans-serif;background:var(--bg);color:var(--text);font-size:17px;line-height:1.65;overflow-x:hidden}
+h1,h2,h3,.display{font-family:'Syne',sans-serif}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+button{cursor:pointer;font-family:'Lexend',sans-serif}
+
+/* ─── NAV ─────────────────────────────────────────── */
+.nav{position:sticky;top:0;z-index:100;padding:0 5vw;display:flex;align-items:center;justify-content:space-between;height:64px;background:rgba(253,248,240,.85);backdrop-filter:blur(16px);border-bottom:1px solid transparent;transition:border-color .3s}
+.nav.scrolled{border-bottom-color:var(--border)}
+.nav-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--purple);display:flex;align-items:center;gap:8px}
+.nav-logo span{background:var(--purple);color:#fff;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:15px;font-weight:400;color:var(--muted);transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--purple);color:#fff;border:none;padding:10px 22px;border-radius:100px;font-size:15px;font-weight:500;transition:background .2s,transform .15s}
+.nav-cta:hover{background:var(--purple-d);transform:translateY(-1px)}
+
+/* ─── HERO ────────────────────────────────────────── */
+.hero{min-height:calc(100vh - 64px);display:grid;place-items:center;padding:80px 5vw;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 60% 20%,rgba(98,72,255,.06) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:1100px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--purple-l);color:var(--purple);font-size:13px;font-weight:500;padding:6px 14px;border-radius:100px;margin-bottom:24px;border:1px solid var(--purple-mid)}
+.hero-badge::before{content:'✦';font-size:10px}
+.hero h1{font-size:clamp(36px,5vw,60px);font-weight:800;line-height:1.1;letter-spacing:-.02em;margin-bottom:20px}
+.hero h1 .accent{color:var(--purple)}
+.hero p{font-size:19px;color:var(--muted);max-width:480px;margin-bottom:36px;font-weight:300;line-height:1.7}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap}
+.btn-primary{background:var(--purple);color:#fff;border:none;padding:16px 32px;border-radius:100px;font-size:17px;font-weight:500;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--purple-d);transform:translateY(-2px);box-shadow:0 8px 24px rgba(98,72,255,.3)}
+.btn-secondary{background:transparent;color:var(--text);border:2px solid var(--border);padding:14px 28px;border-radius:100px;font-size:17px;font-weight:500;transition:all .2s}
+.btn-secondary:hover{border-color:var(--purple-mid);color:var(--purple)}
+.hero-trust{margin-top:32px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.hero-trust span{color:var(--green);font-size:16px}
+
+/* ─── APP MOCKUP SVG ──────────────────────────────── */
+.hero-visual{position:relative}
+.mockup-wrap{background:#fff;border-radius:20px;border:1px solid var(--border);box-shadow:var(--shadow-md);overflow:hidden;padding:0}
+.mockup-topbar{background:var(--surface-alt);padding:14px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.mockup-topbar .dot{width:10px;height:10px;border-radius:50%}
+.mockup-topbar .dot-r{background:#FF5F57}.mockup-topbar .dot-y{background:#FEBC2E}.mockup-topbar .dot-g{background:#28C840}
+.mockup-topbar .label{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--purple);margin-left:8px}
+.mockup-body{display:grid;grid-template-columns:56px 1fr;min-height:360px}
+.mockup-sidebar{background:var(--purple-l);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 0}
+.mockup-icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:18px;transition:background .2s}
+.mockup-icon.active{background:var(--purple);box-shadow:0 4px 12px rgba(98,72,255,.3)}
+.mockup-content{padding:20px;display:flex;flex-direction:column;gap:12px}
+.mockup-passage{background:var(--bg);border-radius:10px;padding:14px;line-height:2}
+.mockup-word{display:inline;padding:2px 1px;border-radius:4px;font-size:15px}
+.mockup-word.hl{background:var(--purple);color:#fff;border-radius:4px;padding:2px 4px}
+.mockup-chips{display:flex;gap:8px;flex-wrap:wrap}
+.mockup-chip{background:var(--purple-l);color:var(--purple);padding:6px 12px;border-radius:100px;font-size:12px;font-weight:500;border:1px solid var(--purple-mid)}
+.mockup-chip.green{background:var(--green-l);color:var(--green);border-color:rgba(13,158,116,.3)}
+.mockup-feedback{background:var(--green-l);border:1px solid rgba(13,158,116,.25);border-radius:10px;padding:12px;font-size:13px;color:var(--green)}
+.float-chip{position:absolute;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:12px;font-weight:500;box-shadow:var(--shadow);display:flex;align-items:center;gap:6px}
+.float-chip.top-right{top:-16px;right:-20px;animation:float1 3s ease-in-out infinite}
+.float-chip.bottom-left{bottom:-12px;left:-24px;animation:float2 3.5s ease-in-out infinite .5s}
+@keyframes float1{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes float2{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ─── STATS ───────────────────────────────────────── */
+.stats{padding:60px 5vw;background:var(--purple)}
+.stats-inner{max-width:1100px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center}
+.stat-val{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:#fff;display:block}
+.stat-lbl{font-size:14px;color:rgba(255,255,255,.7);margin-top:4px}
+
+/* ─── FEATURES ────────────────────────────────────── */
+.features{padding:100px 5vw}
+.section-label{font-size:13px;font-weight:500;color:var(--purple);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.section-title{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-.02em;margin-bottom:16px;max-width:600px}
+.section-sub{color:var(--muted);font-size:18px;max-width:540px;margin-bottom:60px;font-weight:300}
+.feat-tabs{display:flex;gap:8px;margin-bottom:40px;flex-wrap:wrap}
+.feat-tab{background:transparent;border:1.5px solid var(--border);color:var(--muted);padding:10px 22px;border-radius:100px;font-size:15px;font-weight:400;transition:all .2s}
+.feat-tab.active{background:var(--purple);border-color:var(--purple);color:#fff;font-weight:500}
+.feat-panels{position:relative}
+.feat-panel{display:none;animation:panelIn .4s ease}
+.feat-panel.active{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+@keyframes panelIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.feat-panel-content h3{font-size:26px;font-weight:700;margin-bottom:12px}
+.feat-panel-content p{color:var(--muted);margin-bottom:24px;font-size:16px}
+.feat-list{display:flex;flex-direction:column;gap:12px}
+.feat-list li{display:flex;align-items:flex-start;gap:12px;list-style:none;font-size:15px}
+.feat-list li::before{content:'✓';background:var(--green-l);color:var(--green);width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
+.feat-visual{background:var(--surface-alt);border-radius:var(--r-lg);padding:40px;min-height:320px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);position:relative;overflow:hidden}
+.feat-visual::after{content:'';position:absolute;bottom:-40px;right:-40px;width:160px;height:160px;background:var(--purple-l);border-radius:50%;pointer-events:none}
+
+/* Reading visual */
+.reading-demo{width:100%;font-size:18px;line-height:2.2;position:relative;z-index:1}
+.rd-word{display:inline;padding:2px 3px;border-radius:4px;transition:background .3s;cursor:default}
+.rd-word.s1{border-bottom:3px solid var(--purple)}
+.rd-word.s2{border-bottom:3px solid var(--green)}
+.rd-word.current{background:var(--purple);color:#fff;border-radius:4px;border-bottom:none}
+.syl-colors .s1{color:var(--purple-d);font-weight:600}
+.syl-colors .s2{color:var(--green);font-weight:600}
+.rd-controls{display:flex;gap:8px;margin-top:16px;align-items:center;flex-wrap:wrap}
+.rd-btn{background:var(--purple-l);border:none;color:var(--purple);padding:8px 16px;border-radius:100px;font-size:13px;font-weight:500;transition:background .2s}
+.rd-btn:hover,.rd-btn.active-btn{background:var(--purple);color:#fff}
+
+/* Math visual */
+.math-demo{width:100%;position:relative;z-index:1}
+.nl-canvas-wrap{background:#fff;border-radius:12px;padding:16px;border:1px solid var(--border);margin-bottom:12px}
+.math-demo canvas{width:100%;height:auto}
+.math-problem-display{background:var(--purple-l);border-radius:10px;padding:12px 16px;font-size:20px;font-weight:600;color:var(--purple);text-align:center;margin-bottom:12px}
+
+/* Writing visual */
+.writing-demo{width:100%;position:relative;z-index:1}
+.voice-btn-demo{background:var(--purple);border:none;color:#fff;width:72px;height:72px;border-radius:50%;font-size:28px;display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 0 0 0 rgba(98,72,255,.4);animation:pulse 2s ease infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(98,72,255,.4)}70%{box-shadow:0 0 0 16px rgba(98,72,255,0)}100%{box-shadow:0 0 0 0 rgba(98,72,255,0)}}
+.transcript-demo{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:15px;line-height:1.8;min-height:80px;color:var(--text)}
+.frames-demo{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.frame-opt{background:var(--purple-l);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;color:var(--text);cursor:pointer;transition:all .2s}
+.frame-opt:hover,.frame-opt.selected{border-color:var(--purple);background:var(--surface-alt)}
+
+/* Focus visual */
+.focus-demo{width:100%;text-align:center;position:relative;z-index:1}
+.timer-ring-demo{width:140px;height:140px;margin:0 auto 16px}
+.task-list-demo{display:flex;flex-direction:column;gap:8px;text-align:left}
+.task-item-demo{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px}
+.task-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);flex-shrink:0}
+.task-check.done{background:var(--green);border-color:var(--green);display:grid;place-items:center}
+.task-check.done::after{content:'✓';color:#fff;font-size:11px;font-weight:700}
+.task-text-demo.done{text-decoration:line-through;color:var(--muted)}
+
+/* ─── HOW IT WORKS ────────────────────────────────── */
+.how{padding:100px 5vw;background:var(--surface-alt)}
+.steps{max-width:1100px;margin:auto}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:60px;position:relative}
+.steps-grid::before{content:'';position:absolute;top:44px;left:16%;right:16%;height:2px;background:linear-gradient(90deg,var(--purple),var(--green));z-index:0}
+.step{text-align:center;position:relative;z-index:1}
+.step-num{width:88px;height:88px;border-radius:50%;background:var(--purple);color:#fff;font-family:'Syne',sans-serif;font-size:32px;font-weight:800;display:grid;place-items:center;margin:0 auto 20px;box-shadow:0 8px 24px rgba(98,72,255,.25)}
+.step h3{font-size:20px;font-weight:700;margin-bottom:8px}
+.step p{color:var(--muted);font-size:15px}
+
+/* ─── RESEARCH ────────────────────────────────────── */
+.research{padding:80px 5vw}
+.research-inner{max-width:1100px;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.research-cards{display:flex;flex-direction:column;gap:16px}
+.research-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;display:flex;gap:16px;align-items:flex-start;box-shadow:var(--shadow)}
+.research-card .rc-icon{font-size:28px;flex-shrink:0;width:48px;height:48px;background:var(--purple-l);border-radius:12px;display:grid;place-items:center}
+.research-card h4{font-size:15px;font-weight:600;margin-bottom:4px}
+.research-card p{font-size:13px;color:var(--muted)}
+
+/* ─── WHO IT'S FOR ────────────────────────────────── */
+.who{padding:100px 5vw;background:var(--surface-alt)}
+.who-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:1100px;margin:60px auto 0}
+.who-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:28px 24px;transition:all .25s}
+.who-card:hover{border-color:var(--purple-mid);transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.who-card .wc-icon{font-size:36px;margin-bottom:16px}
+.who-card h3{font-size:18px;font-weight:700;margin-bottom:8px}
+.who-card p{font-size:14px;color:var(--muted);line-height:1.6}
+.who-card .wc-tag{display:inline-block;background:var(--purple-l);color:var(--purple);font-size:12px;font-weight:500;padding:4px 10px;border-radius:100px;margin-top:14px}
+
+/* ─── FREE SECTION ────────────────────────────────── */
+.free-section{padding:80px 5vw;text-align:center}
+.free-inner{max-width:700px;margin:auto}
+.free-inner h2{font-size:40px;font-weight:800;margin-bottom:16px;letter-spacing:-.02em}
+.free-inner p{color:var(--muted);font-size:18px;margin-bottom:36px;font-weight:300}
+.free-features{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:36px}
+.free-feat{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:400}
+.free-feat::before{content:'✓';background:var(--green-l);color:var(--green);width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+
+/* ─── CTA ─────────────────────────────────────────── */
+.cta{padding:100px 5vw;background:var(--purple);position:relative;overflow:hidden;text-align:center}
+.cta::before{content:'';position:absolute;top:-60%;left:-10%;width:500px;height:500px;background:rgba(255,255,255,.05);border-radius:50%;pointer-events:none}
+.cta::after{content:'';position:absolute;bottom:-60%;right:-5%;width:400px;height:400px;background:rgba(255,255,255,.04);border-radius:50%;pointer-events:none}
+.cta-inner{max-width:700px;margin:auto;position:relative;z-index:1}
+.cta h2{font-size:clamp(30px,4vw,48px);font-weight:800;color:#fff;margin-bottom:16px;letter-spacing:-.02em}
+.cta p{color:rgba(255,255,255,.75);font-size:18px;margin-bottom:40px;font-weight:300}
+.btn-white{background:#fff;color:var(--purple);border:none;padding:18px 40px;border-radius:100px;font-size:18px;font-weight:600;transition:all .2s}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.15)}
+
+/* ─── FOOTER ──────────────────────────────────────── */
+footer{background:var(--text);color:rgba(255,255,255,.6);padding:60px 5vw 40px;font-size:14px}
+.footer-grid{max-width:1100px;margin:auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:48px}
+.footer-brand .fl{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:10px;display:block}
+.footer-brand p{font-size:13px;line-height:1.7;max-width:260px}
+.footer-col h4{color:#fff;font-size:14px;font-weight:600;margin-bottom:14px}
+.footer-col a{display:block;margin-bottom:8px;color:rgba(255,255,255,.5);transition:color .2s;font-size:13px}
+.footer-col a:hover{color:#fff}
+.footer-bottom{max-width:1100px;margin:auto;padding-top:24px;border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:gap}
+.footer-badges{display:flex;gap:12px;flex-wrap:wrap}
+.footer-badge{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:5px 12px;border-radius:6px;font-size:12px}
+
+/* ─── SCROLL REVEAL ───────────────────────────────── */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* ─── RESPONSIVE ──────────────────────────────────── */
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr;gap:40px}
+  .hero-visual{display:none}
+  .stats-inner{grid-template-columns:repeat(2,1fr)}
+  .feat-panel.active{grid-template-columns:1fr}
+  .research-inner{grid-template-columns:1fr}
+  .who-grid{grid-template-columns:repeat(2,1fr)}
+  .steps-grid{grid-template-columns:1fr;gap:24px}
+  .steps-grid::before{display:none}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+}
+@media(max-width:600px){
+  .nav-links{display:none}
+  .who-grid{grid-template-columns:1fr}
+  .stats-inner{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─────────────────────────────────────── -->
+<nav class="nav" id="nav">
+  <div class="nav-logo"><span>S</span>SpecialMinds</div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#research">Research</a>
+    <a href="#who">Who it's for</a>
+  </div>
+  <button class="nav-cta" onclick="window.location.href='app.html'">Start for free →</button>
+</nav>
+
+<!-- ─── HERO ─────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge">Built on Orton-Gillingham &amp; ADHD research</div>
+      <h1>The AI tutor built for how <span class="accent">your brain</span> works</h1>
+      <p>Free, in-browser learning support for students with dyslexia, ADHD, dyscalculia, and dysgraphia. No account. No download. No cost. Ever.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="window.location.href='app.html'">Start learning free →</button>
+        <button class="btn-secondary" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See how it works</button>
+      </div>
+      <div class="hero-trust"><span>✓</span> Works on any phone or computer &nbsp;·&nbsp; <span>✓</span> Zero accounts for students &nbsp;·&nbsp; <span>✓</span> COPPA &amp; FERPA safe</div>
+    </div>
+
+    <div class="hero-visual">
+      <div style="position:relative">
+        <div class="mockup-wrap">
+          <div class="mockup-topbar">
+            <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+            <span class="label">SpecialMinds</span>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-sidebar">
+              <div class="mockup-icon active">📖</div>
+              <div class="mockup-icon">🔢</div>
+              <div class="mockup-icon">✏️</div>
+              <div class="mockup-icon">🧠</div>
+            </div>
+            <div class="mockup-content">
+              <div class="mockup-chips">
+                <span class="mockup-chip">📖 Reading Coach</span>
+                <span class="mockup-chip green">✓ 3 words read</span>
+              </div>
+              <div class="mockup-passage">
+                <span class="mockup-word">The</span> <span class="mockup-word hl">cat</span> <span class="mockup-word">sat</span> <span class="mockup-word">on</span> <span class="mockup-word">the</span> <span class="mockup-word">mat.</span>
+              </div>
+              <div class="mockup-feedback">✓ Great job! You got that short-a sound perfectly!</div>
+              <div style="background:#f8f8f8;border-radius:8px;padding:10px;font-size:13px;color:#6B5F7A">💬 "What does the /a/ sound like in 'cat'?" →</div>
+            </div>
+          </div>
+        </div>
+        <div class="float-chip top-right">🎯 95% accuracy this session</div>
+        <div class="float-chip bottom-left">⏱️ 15-min focus session</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── STATS ─────────────────────────────────────── -->
+<section class="stats">
+  <div class="stats-inner">
+    <div><span class="stat-val" data-target="1">0</span><div class="stat-lbl">in 5 students has dyslexia</div></div>
+    <div><span class="stat-val" data-target="63">0</span><div class="stat-lbl">% better outcomes with AI-adapted tools</div></div>
+    <div><span class="stat-val" data-target="543">0</span><div class="stat-lbl">Simultaneous landmarks in PitchIQ (sister project)</div></div>
+    <div><span class="stat-val" data-target="0" data-label="$0">$0</span><div class="stat-lbl">Cost forever for every student</div></div>
+  </div>
+</section>
+
+<!-- ─── FEATURES ──────────────────────────────────── -->
+<section class="features" id="features">
+  <div style="max-width:1100px;margin:auto">
+    <div class="section-label reveal">4 Learning Engines</div>
+    <h2 class="section-title reveal">One tool for every kind of learning challenge</h2>
+    <p class="section-sub reveal">Switch between engines anytime. Each one is built from the ground up for its specific challenge — not a generic tool with an accessibility patch.</p>
+
+    <div class="feat-tabs reveal">
+      <button class="feat-tab active" data-tab="reading">📖 Reading</button>
+      <button class="feat-tab" data-tab="math">🔢 Math</button>
+      <button class="feat-tab" data-tab="writing">✏️ Writing</button>
+      <button class="feat-tab" data-tab="focus">🧠 Focus &amp; ADHD</button>
+    </div>
+
+    <div class="feat-panels">
+
+      <div class="feat-panel active" id="tab-reading">
+        <div class="feat-panel-content">
+          <h3>Reading Coach</h3>
+          <p>Built on the Orton-Gillingham method — the gold standard for dyslexia instruction. Every word, every sound, taught the right way.</p>
+          <ul class="feat-list">
+            <li>OpenDyslexic &amp; Lexend font — letters that stay put</li>
+            <li>Word-by-word highlighting as text is read aloud</li>
+            <li>Syllable coloring — see how words break apart</li>
+            <li>Adjustable reading speed (50% to 100%)</li>
+            <li>5 levels of decodable passages or paste your own</li>
+            <li>AI explains any word in simple terms, instantly</li>
+            <li>Phoneme cards for letter-sound practice</li>
+          </ul>
+        </div>
+        <div class="feat-visual">
+          <div class="reading-demo">
+            <div id="reading-demo-text" style="margin-bottom:12px;font-size:17px;line-height:2.2">
+              <span class="rd-word s1">The</span> <span class="rd-word s2">big</span> <span class="rd-word s1 current">black</span> <span class="rd-word s2">dog</span> <span class="rd-word s1">ran</span> <span class="rd-word s2">fast.</span>
+            </div>
+            <div class="rd-controls">
+              <button class="rd-btn">▶ Play</button>
+              <button class="rd-btn active-btn">🔤 Syllables ON</button>
+              <button class="rd-btn">🐢 Slow</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feat-panel" id="tab-math">
+        <div class="feat-panel-content">
+          <h3>Math Coach</h3>
+          <p>Dyscalculia-aware math instruction. Always visual first, always concrete before abstract. Number lines before equations.</p>
+          <ul class="feat-list">
+            <li>Interactive number line — see arithmetic as jumps</li>
+            <li>Area model multiplication — no memorizing tables</li>
+            <li>Word problem simplifier — rewritten in plain language</li>
+            <li>Step-by-step breakdown with checkboxes</li>
+            <li>Fraction visualizer with pie charts and bar models</li>
+            <li>AI explains each step in 1–2 sentences max</li>
+          </ul>
+        </div>
+        <div class="feat-visual">
+          <div class="math-demo" style="width:100%">
+            <div class="math-problem-display">8 + 5 = ?</div>
+            <div class="nl-canvas-wrap">
+              <canvas id="feat-nl-canvas" width="400" height="80"></canvas>
+            </div>
+            <div style="font-size:13px;color:var(--muted);text-align:center">Start at 8, jump 5 forward → land on 13</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feat-panel" id="tab-writing">
+        <div class="feat-panel-content">
+          <h3>Writing Coach</h3>
+          <p>Dysgraphia and dyslexia make writing exhausting. SpecialMinds takes the cognitive load off so you can focus on your ideas.</p>
+          <ul class="feat-list">
+            <li>Voice-to-text drafting — speak, don't type</li>
+            <li>Sentence frame starters when you're stuck</li>
+            <li>Brain dump → AI organizes your chaos into an outline</li>
+            <li>One paragraph at a time — no overwhelming wall of text</li>
+            <li>Word prediction with phonetic matching</li>
+            <li>Ideas-first feedback — never spelling first</li>
+          </ul>
+        </div>
+        <div class="feat-visual">
+          <div class="writing-demo">
+            <button class="voice-btn-demo">🎤</button>
+            <div class="transcript-demo">"My favorite animal is a dog because they are loyal and..."</div>
+            <div class="frames-demo">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500">Choose a starter:</div>
+              <div class="frame-opt selected">One reason I think this is...</div>
+              <div class="frame-opt">Another thing I want to say...</div>
+              <div class="frame-opt">This matters because...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feat-panel" id="tab-focus">
+        <div class="feat-panel-content">
+          <h3>Focus &amp; ADHD Coach</h3>
+          <p>ADHD is a disorder of executive function, not attention. SpecialMinds provides the scaffolding your brain needs — without judgment.</p>
+          <ul class="feat-list">
+            <li>Task decomposer — paste any assignment, get micro-steps</li>
+            <li>Pomodoro focus timer with visual progress ring</li>
+            <li>Priority matrix — urgent vs. important, drag and sort</li>
+            <li>Working memory pad — dump thoughts without losing your place</li>
+            <li>Frustration detection — AI offers a break before you burn out</li>
+            <li>Dopamine-friendly completion celebrations</li>
+          </ul>
+        </div>
+        <div class="feat-visual">
+          <div class="focus-demo">
+            <svg class="timer-ring-demo" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#EDE9FF" stroke-width="12"/>
+              <circle cx="70" cy="70" r="58" fill="none" stroke="#6248FF" stroke-width="12" stroke-linecap="round"
+                stroke-dasharray="364" stroke-dashoffset="91" transform="rotate(-90 70 70)"/>
+              <text x="70" y="70" text-anchor="middle" dy="6" font-family="Syne,sans-serif" font-size="22" font-weight="800" fill="#1A1033">11:15</text>
+              <text x="70" y="92" text-anchor="middle" font-family="Lexend,sans-serif" font-size="11" fill="#6B5F7A">FOCUS</text>
+            </svg>
+            <div class="task-list-demo">
+              <div class="task-item-demo"><div class="task-check done"></div><span class="task-text-demo done">Read page 1</span></div>
+              <div class="task-item-demo" style="border-color:var(--purple);background:var(--purple-l)"><div class="task-check"></div><span>Answer question 1 (3 min)</span></div>
+              <div class="task-item-demo"><div class="task-check"></div><span>Answer question 2 (3 min)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── HOW IT WORKS ──────────────────────────────── -->
+<section class="how" id="how">
+  <div class="steps">
+    <div style="text-align:center;max-width:600px;margin:auto">
+      <div class="section-label reveal">Simple as 1-2-3</div>
+      <h2 class="section-title reveal" style="margin:0 auto 16px">Up and running in 60 seconds</h2>
+      <p class="section-sub reveal" style="margin:0 auto 0">No accounts for students. No downloads. No setup. Open the link and start learning.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step reveal">
+        <div class="step-num">1</div>
+        <h3>Tell us about you</h3>
+        <p>A quick 4-question setup. Name, learning challenge, grade, and preferred font. Takes under 60 seconds. No email needed.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num" style="background:var(--green)">2</div>
+        <h3>Pick your engine</h3>
+        <p>Reading, Math, Writing, or Focus. Switch any time. The AI automatically adjusts its coaching style for whichever engine you're using.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num" style="background:var(--amber)">3</div>
+        <h3>Start learning</h3>
+        <p>Ask the AI tutor anything. Paste your homework. Record your voice. The AI responds in 2 sentences max — never a wall of text.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── RESEARCH ──────────────────────────────────── -->
+<section class="research" id="research">
+  <div class="research-inner" style="max-width:1100px;margin:auto">
+    <div>
+      <div class="section-label reveal">Evidence-Based Design</div>
+      <h2 class="section-title reveal">Every decision backed by decades of research</h2>
+      <p style="color:var(--muted);font-size:16px;margin-top:12px;font-weight:300">SpecialMinds isn't built on gut feeling. Every design choice — the font, the color, the sentence length, the feedback tone — comes from peer-reviewed research.</p>
+    </div>
+    <div class="research-cards">
+      <div class="research-card reveal">
+        <div class="rc-icon">📚</div>
+        <div><h4>Orton-Gillingham Method</h4><p>The gold standard for dyslexia instruction, endorsed by the International Dyslexia Association. Structured, sequential, multi-sensory phonics instruction.</p></div>
+      </div>
+      <div class="research-card reveal">
+        <div class="rc-icon">🧬</div>
+        <div><h4>WCAG AAA Accessibility</h4><p>Every color contrast ratio meets AAA standards. Warm cream backgrounds (#FDF8F0) reduce visual stress for dyslexic readers compared to pure white.</p></div>
+      </div>
+      <div class="research-card reveal">
+        <div class="rc-icon">🎯</div>
+        <div><h4>63% Better Outcomes</h4><p>NIH-funded research shows 63% better learning outcomes when AI adapts to neurodivergent learning patterns (Zhu et al., 2025).</p></div>
+      </div>
+      <div class="research-card reveal">
+        <div class="rc-icon">🧠</div>
+        <div><h4>Executive Function Science</h4><p>ADHD task decomposition, Pomodoro timing intervals, and working memory offloading are all validated by CHADD-endorsed research frameworks.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── WHO IT'S FOR ──────────────────────────────── -->
+<section class="who" id="who">
+  <div style="max-width:1100px;margin:auto;text-align:center">
+    <div class="section-label reveal">Designed for every learner</div>
+    <h2 class="section-title reveal" style="margin:0 auto 16px">You're not the problem. The tools were.</h2>
+    <p class="section-sub reveal" style="margin:0 auto">SpecialMinds was built for the students who were told they were slow, lazy, or just not trying hard enough. They were wrong about you.</p>
+  </div>
+  <div class="who-grid">
+    <div class="who-card reveal">
+      <div class="wc-icon">📖</div>
+      <h3>Dyslexia</h3>
+      <p>Letters flip, words blur, reading is exhausting. SpecialMinds uses dyslexic-friendly fonts, syllable breaking, and explicit phonics to make reading click.</p>
+      <span class="wc-tag">Reading Coach</span>
+    </div>
+    <div class="who-card reveal">
+      <div class="wc-icon">🧠</div>
+      <h3>ADHD</h3>
+      <p>Can't start, can't stop, can't remember. SpecialMinds breaks every task into steps, tracks your focus, and notices when you need a break before you burn out.</p>
+      <span class="wc-tag">Focus Coach</span>
+    </div>
+    <div class="who-card reveal">
+      <div class="wc-icon">🔢</div>
+      <h3>Dyscalculia</h3>
+      <p>Numbers don't stick the way they should. SpecialMinds teaches math visually — number lines, area models, and concrete models before any abstract symbol.</p>
+      <span class="wc-tag">Math Coach</span>
+    </div>
+    <div class="who-card reveal">
+      <div class="wc-icon">✏️</div>
+      <h3>Dysgraphia</h3>
+      <p>Writing feels impossible when your hand and brain won't cooperate. SpecialMinds lets you speak your ideas, organize your chaos, and edit one paragraph at a time.</p>
+      <span class="wc-tag">Writing Coach</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FREE SECTION ──────────────────────────────── -->
+<section class="free-section">
+  <div class="free-inner">
+    <div class="section-label reveal" style="text-align:center">Pricing</div>
+    <h2 class="reveal">Free. Actually free.</h2>
+    <p class="reveal">Not a trial. Not "free for 7 days." Not "free with email." Free. Every feature, every student, every day. A student with dyslexia shouldn't pay extra just to learn.</p>
+    <div class="free-features reveal">
+      <div class="free-feat">All 4 learning engines</div>
+      <div class="free-feat">AI-powered chat tutor</div>
+      <div class="free-feat">No account required</div>
+      <div class="free-feat">Works offline after load</div>
+      <div class="free-feat">No ads, ever</div>
+    </div>
+    <button class="btn-primary reveal" onclick="window.location.href='app.html'" style="font-size:18px;padding:18px 40px">Open SpecialMinds →</button>
+  </div>
+</section>
+
+<!-- ─── CTA ───────────────────────────────────────── -->
+<section class="cta">
+  <div class="cta-inner">
+    <h2>Every student deserves a patient teacher.</h2>
+    <p>SpecialMinds is available right now, on any device, for any student who needs it. No waitlist. No credit card. No barriers.</p>
+    <button class="btn-white" onclick="window.location.href='app.html'">Start learning for free →</button>
+  </div>
+</section>
+
+<!-- ─── FOOTER ────────────────────────────────────── -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="fl">SpecialMinds</span>
+      <p>Free AI tutoring for students with dyslexia, ADHD, dyscalculia, and dysgraphia. Built by a student, for students. Apex, NC — 2026.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <a href="app.html">Reading Coach</a>
+      <a href="app.html">Math Coach</a>
+      <a href="app.html">Writing Coach</a>
+      <a href="app.html">Focus Coach</a>
+    </div>
+    <div class="footer-col">
+      <h4>For Schools</h4>
+      <a href="#">Teacher Dashboard</a>
+      <a href="#">IEP Alignment</a>
+      <a href="#">FERPA Compliance</a>
+      <a href="#">District Licensing</a>
+    </div>
+    <div class="footer-col">
+      <h4>About</h4>
+      <a href="#">Research Basis</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Contact</a>
+      <a href="#">GitHub</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 SpecialMinds. Built by Arnav, Apex NC.</span>
+    <div class="footer-badges">
+      <span class="footer-badge">COPPA Safe</span>
+      <span class="footer-badge">FERPA Compliant</span>
+      <span class="footer-badge">WCAG AA</span>
+      <span class="footer-badge">IDA Aligned</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ─── NAV SCROLL ────────────────────────────────────
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);
+});
+
+// ─── FEATURE TABS ──────────────────────────────────
+document.querySelectorAll('.feat-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.feat-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.feat-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+    if(tab.dataset.tab==='math') drawFeatNL();
+  });
+});
+
+// ─── NUMBER LINE DEMO ──────────────────────────────
+function drawFeatNL(){
+  const canvas=document.getElementById('feat-nl-canvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||400, H=80;
+  canvas.width=W; canvas.height=H;
+  const min=0,max=14,pad=24;
+  const step=(W-2*pad)/(max-min);
+  const ly=H/2;
+  ctx.clearRect(0,0,W,H);
+  ctx.beginPath();ctx.moveTo(pad,ly);ctx.lineTo(W-pad,ly);
+  ctx.strokeStyle='#E8E1FF';ctx.lineWidth=3;ctx.stroke();
+  for(let n=min;n<=max;n++){
+    const x=pad+(n-min)*step;
+    ctx.beginPath();ctx.moveTo(x,ly-6);ctx.lineTo(x,ly+6);
+    ctx.strokeStyle=n===8||n===13?'#6248FF':'#C4B5FF';ctx.lineWidth=n===8||n===13?2:1;ctx.stroke();
+    if(n%2===0||n===8||n===13){
+      ctx.fillStyle=n===13?'#6248FF':'#6B5F7A';
+      ctx.font=`${n===13?'bold ':''} 12px Lexend,sans-serif`;
+      ctx.textAlign='center';ctx.fillText(n,x,ly+20);
+    }
+  }
+  // Arc from 8 to 13
+  [[8,13,'#6248FF']].forEach(([f,t,col])=>{
+    const x1=pad+(f-min)*step, x2=pad+(t-min)*step;
+    ctx.beginPath();ctx.moveTo(x1,ly);
+    ctx.quadraticCurveTo((x1+x2)/2,ly-34,x2,ly);
+    ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.setLineDash([6,3]);ctx.stroke();ctx.setLineDash([]);
+  });
+  // Dots
+  [[8,'#6248FF'],[13,'#0D9E74']].forEach(([n,col])=>{
+    const x=pad+(n-min)*step;
+    ctx.beginPath();ctx.arc(x,ly,7,0,2*Math.PI);ctx.fillStyle=col;ctx.fill();
+  });
+}
+
+// ─── SCROLL REVEAL ─────────────────────────────────
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:.15});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// ─── STAT COUNTERS ─────────────────────────────────
+function animateCounters(){
+  document.querySelectorAll('.stat-val[data-target]').forEach(el=>{
+    const target=parseInt(el.dataset.target);
+    if(el.dataset.label){return;}
+    let cur=0;
+    const dur=1800,step=1000/60;
+    const inc=target/(dur/step);
+    const timer=setInterval(()=>{
+      cur=Math.min(cur+inc,target);
+      el.textContent=Math.floor(cur)+(el.textContent.includes('%')?'%':'');
+      if(cur>=target){el.textContent=target;clearInterval(timer);}
+    },step);
+  });
+}
+const statsObs=new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting){animateCounters();statsObs.disconnect();}
+},{threshold:.3});
+const statsEl=document.querySelector('.stats');
+if(statsEl) statsObs.observe(statsEl);
+
+// Draw number line on load if math tab active
+setTimeout(()=>{if(document.getElementById('feat-nl-canvas'))drawFeatNL();},300);
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .catch(err => console.warn('SW:', err));
+  });
+}
+</script>
+</body>
+</html>
