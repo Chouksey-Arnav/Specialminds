@@ -1,0 +1,45 @@
+{
+  "name": "SpecialMinds — AI Tutor",
+  "short_name": "SpecialMinds",
+  "description": "Free AI tutoring for students with dyslexia, ADHD, dyscalculia, and dysgraphia.",
+  "start_url": "/app.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FDF8F0",
+  "theme_color": "#6248FF",
+  "lang": "en-US",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%236248FF'/%3E%3Ctext x='96' y='135' font-family='Arial' font-weight='900' font-size='110' fill='white' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%236248FF'/%3E%3Ctext x='256' y='370' font-family='Arial' font-weight='900' font-size='300' fill='white' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Reading Coach",
+      "short_name": "Reading",
+      "description": "Open the Reading Coach for dyslexia support",
+      "url": "/app.html#reading",
+      "icons": []
+    },
+    {
+      "name": "Focus Timer",
+      "short_name": "Focus",
+      "description": "Start a Pomodoro focus session",
+      "url": "/app.html#executive",
+      "icons": []
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
