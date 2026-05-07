@@ -3,11 +3,9 @@
   "version": "1.0.0",
   "description": "Free AI tutor for students with dyslexia, ADHD, dyscalculia, and dysgraphia. Built by Arnav, Apex NC.",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "npx serve . -p 3000",
-    "build": "echo 'No build step — pure HTML/CSS/JS'",
-    "lint": "echo 'No linting configured'",
+    "build": "echo 'No build step required'",
     "test": "echo 'No tests configured yet'"
   },
   "engines": {
